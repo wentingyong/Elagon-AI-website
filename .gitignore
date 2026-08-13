@@ -1,0 +1,7 @@
+.next/
+node_modules/
+.env*.local
+.sanity/
+*.tsbuildinfo
+playwright-report/
+test-results/
