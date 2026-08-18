@@ -14,6 +14,9 @@ export const heroHeadline: SplitHeadlineData = {
   connectorBottom: "that lasts.",
 };
 
+export const heroMission =
+  "Elagon redesigns important work and builds production AI around the people, data and decisions that make it work.";
+
 export const services = [
   {
     number: "01",

@@ -2,14 +2,14 @@ import Link from "next/link";
 import { ArrowIcon } from "@/components/ArrowIcon";
 import { CaseCard } from "@/components/CaseCard";
 import { FinalCTA, SectionIntro } from "@/components/Editorial";
-import { HeroStage } from "@/components/HeroStage";
+import { HeroScroll } from "@/components/hero/HeroScroll";
 import { PrimaryCTA } from "@/components/PrimaryCTA";
 import { cases, services, systemLayers } from "@/content/site";
 
 export default function Home() {
   return (
     <>
-      <HeroStage />
+      <HeroScroll />
 
       <section id="positioning" className="positioning-section section-pad">
         <p className="eyebrow" data-reveal>Built for the real world</p>
