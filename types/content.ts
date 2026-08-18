@@ -32,6 +32,8 @@ export interface CaseStudy {
   slug: string;
   code: string;
   title: string;
+  verb: string;
+  headline: string;
   industry: string;
   category: string;
   summary: string;
@@ -42,5 +44,6 @@ export interface CaseStudy {
   outcomes: Array<{ value: string; label: string; context: string }>;
   workflow: string[];
   delivered: string[];
+  measurementNote: string;
   accent: "moss" | "rust" | "sky";
 }

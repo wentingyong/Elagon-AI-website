@@ -27,7 +27,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined}>{item.label}</Link>
           ))}
         </nav>
-        <Link className="contact-pill" href="/contact">Contact <span><ArrowIcon /></span></Link>
+        <Link className="contact-pill" href="/contact">Discuss a workflow <span><ArrowIcon /></span></Link>
         <button className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-menu" aria-label={open ? "Close menu" : "Open menu"} onClick={() => setOpen((value) => !value)}>
           <span /><span />
         </button>
@@ -41,7 +41,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             ))}
             <Link href="/contact" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)}><span>05</span>Contact</Link>
           </nav>
-          <p>AI systems for complex operations.<br />Built to work. Designed to last.</p>
+          <p>One critical workflow.<br />One measurable change.</p>
         </div>
       </div>
     </>

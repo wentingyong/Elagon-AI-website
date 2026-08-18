@@ -51,7 +51,7 @@ export function HeroStage() {
   return (
     <section className="hero-stage" ref={root}>
       <div className="hero-media" data-parallax>
-        <Image src="/images/hero-renaissance.png" alt="Pixel-dithered Renaissance marble sculpture before monumental architecture" fill priority sizes="100vw" />
+        <Image src="/images/hero.png" alt="Pixel-dithered classical landscape with monumental architecture and a distant city" fill priority sizes="100vw" />
       </div>
       <div className="hero-scrim" />
       <div className="hero-pixel-field" aria-hidden="true" />
