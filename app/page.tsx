@@ -1,11 +1,10 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowIcon } from "@/components/ArrowIcon";
 import { CaseCard } from "@/components/CaseCard";
 import { FinalCTA, SectionIntro } from "@/components/Editorial";
 import { HeroStage } from "@/components/HeroStage";
 import { PrimaryCTA } from "@/components/PrimaryCTA";
-import { cases, companyRoles, services } from "@/content/site";
+import { cases, services, systemLayers } from "@/content/site";
 
 export default function Home() {
   return (
@@ -13,42 +12,37 @@ export default function Home() {
       <HeroStage />
 
       <section id="positioning" className="positioning-section section-pad">
-        <p className="eyebrow" data-reveal>AI systems for complex operations</p>
-        <h2 data-reveal>From a valuable workflow<br />to a capability <em>your team owns.</em></h2>
-        <p data-reveal>Elagon finds where AI can create material value, builds the production system around the work, and establishes how it will run and improve.</p>
+        <p className="eyebrow" data-reveal>Built for the real world</p>
+        <h2 data-reveal>One critical workflow.<br /><em>One measurable change.</em></h2>
+        <p data-reveal>Elagon redesigns important work and builds production AI around the people, data and decisions that make it work.</p>
+      </section>
+
+      <section className="selected-work section-pad">
+        <SectionIntro eyebrow="Selected work" title={<>The outcome<br /><em>is the story.</em></>} text="Measured in time, accuracy and capacity—not demonstrations." />
+        <div className="home-work-grid"><CaseCard item={cases[0]} featured /><div>{cases.slice(1).map((item) => <CaseCard key={item.slug} item={item} />)}</div></div>
+        <PrimaryCTA href="/work">View all work</PrimaryCTA>
       </section>
 
       <section className="home-services section-pad">
-        <SectionIntro eyebrow="What we do" title={<>Three moves.<br /><em>One working system.</em></>} />
+        <SectionIntro eyebrow="How to begin" title={<>Find the value.<br /><em>Prove the path. Put it to work.</em></>} />
         <div className="service-triptych">
           {services.map((service) => (
             <article key={service.number} className={`service-panel tone-${service.tone}`} data-reveal>
-              <span>{service.number}</span><div><h3>{service.title}</h3><p>{service.line}</p><Link href={`/services#service-${service.number}`}>Explore <ArrowIcon /></Link></div>
+              <span>{service.number}</span><div><p className="service-offer">{service.offer}</p><h3>{service.title}</h3><p>{service.line}</p><Link href={`/services#service-${service.number}`}>See the engagement <ArrowIcon /></Link></div>
             </article>
           ))}
         </div>
       </section>
 
-      <section className="selected-work section-pad">
-        <SectionIntro eyebrow="Selected work" title={<>Proof lives in<br /><em>the operation.</em></>} text="Production systems measured in time, accuracy, capacity and control." />
-        <div className="home-work-grid"><CaseCard item={cases[0]} featured /><div>{cases.slice(1).map((item) => <CaseCard key={item.slug} item={item} />)}</div></div>
-        <PrimaryCTA href="/work">View all work</PrimaryCTA>
-      </section>
-
       <section className="playbook-preview section-pad">
-        <SectionIntro eyebrow="The playbook" title={<>Value first.<br /><em>Ownership always.</em></>} />
+        <SectionIntro eyebrow="The Elagon Playbook" title={<>The model is<br /><em>only one part.</em></>} text="A production system also needs a business measure, operating context, controls, accountable people and a learning loop." />
         <div className="playbook-steps">
-          {services.map((service) => <article key={service.number} data-reveal><span>{service.number}</span><h3>{service.title}</h3><p>{service.result}</p></article>)}
+          {systemLayers.map((layer) => <article key={layer.number} data-reveal><span>{layer.number}</span><h3>{layer.title}</h3><p>{layer.line}</p></article>)}
         </div>
         <PrimaryCTA href="/approach" inverse>Explore the playbook</PrimaryCTA>
       </section>
 
-      <section className="company-preview section-pad">
-        <div className="company-image" data-reveal><Image src="/images/arcade-dither.png" alt="Pixel-dithered classical arcade overlooking a mountain and sea" fill sizes="(max-width: 767px) 100vw, 56vw" /></div>
-        <div className="company-copy" data-reveal><p className="eyebrow">How we work</p><h2>Advisor.<br />Builder.<br /><em>Operating partner.</em></h2><p>{companyRoles.map((role) => role.text).join(" ")}</p><PrimaryCTA href="/company">Meet Elagon</PrimaryCTA></div>
-      </section>
-
-      <FinalCTA />
+      <FinalCTA title="Bring us the workflow that matters." text="We’ll determine whether it is material, measurable and ready for a focused production decision." />
     </>
   );
 }

@@ -9,7 +9,7 @@ export default function ContactPage() {
     <>
       <SiteHeader />
       <section className="contact-page">
-        <div className="contact-intro"><p className="eyebrow">Contact</p><h1>Bring us the<br /><em>workflow that matters.</em></h1><p>Tell us what should work differently, what measurable outcome matters, and what is standing in the way.</p><dl><div><dt>Best fit</dt><dd>Enterprises and PE-backed companies with an accountable owner and a material operational outcome.</dd></div><div><dt>Response</dt><dd>A senior member of the team replies within two business days.</dd></div><div><dt>Direct</dt><dd><Link href="mailto:jordan@elagon.ai">jordan@elagon.ai</Link></dd></div></dl></div>
+        <div className="contact-intro"><p className="eyebrow">Contact</p><h1>Start with<br /><em>the workflow.</em></h1><p>Tell us what happens today, what should be different and how the business would measure the change.</p><dl><div><dt>Good starting point</dt><dd>One important workflow, one accountable owner and one result worth improving.</dd></div><div><dt>First response</dt><dd>A senior member of the team replies within two business days.</dd></div><div><dt>Direct</dt><dd><Link href="mailto:jordan@elagon.ai">jordan@elagon.ai</Link></dd></div></dl></div>
         <ContactForm />
       </section>
     </>
