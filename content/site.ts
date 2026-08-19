@@ -124,6 +124,9 @@ export const cases: CaseStudy[] = [
     delivered: ["Controlled extraction pipeline", "Source-linked explanations", "Versioned field definitions", "Evaluation and reviewer feedback loop"],
     measurementNote: "Figures are approximate and reflect the evaluated workflow and reported model cost at the time of project review.",
     accent: "sky",
+    cardTitle: "Contract Intelligence",
+    stat: { value: "40", unit: "sec", label: "Process each contract" },
+    art: "case-01",
   },
   {
     slug: "communications-automation",
@@ -146,7 +149,10 @@ export const cases: CaseStudy[] = [
     workflow: ["Jira", "Compose", "Review", "Distribute"],
     delivered: ["Jira-connected workflow", "Template and style system", "Batch communications generation", "Least-privilege access and human approval"],
     measurementNote: "Time and labour-value figures are estimates based on five users, three hours saved per user per week and an illustrative $50 hourly cost.",
-    accent: "moss",
+    accent: "sky",
+    cardTitle: "Communications Automation",
+    stat: { value: "~750", unit: "hrs", label: "Reclaim annual capacity" },
+    art: "case-02",
   },
   {
     slug: "digital-rights-operations",
@@ -170,6 +176,9 @@ export const cases: CaseStudy[] = [
     delivered: ["Unified monitoring platform", "Portfolio and prioritization controls", "Expert review queues", "Claim initiation workflow"],
     measurementNote: "The reduction is a technical-team estimate based on observation of the prior workflow and direct employee feedback.",
     accent: "rust",
+    cardTitle: "Rights Operations",
+    stat: { value: "80–90", unit: "%", label: "Reduce manual workflow" },
+    art: "case-03",
   },
   {
     slug: "performance-intelligence",
@@ -193,6 +202,9 @@ export const cases: CaseStudy[] = [
     delivered: ["Central performance platform", "Multi-source normalization", "Automated document creation", "Continuous reporting and issue alerts"],
     measurementNote: "The spreadsheet count and update windows describe the reviewed operating workflow and configured system behaviour.",
     accent: "sky",
+    cardTitle: "Performance Intelligence",
+    stat: { value: "10 → 1", label: "Consolidate reporting" },
+    art: "case-04",
   },
 ];
 

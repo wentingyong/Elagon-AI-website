@@ -8,7 +8,7 @@ export const metadata = { title: "Selected Work", description: "Production AI sy
 export default function WorkPage() {
   return (
     <>
-      <PageHero eyebrow="Selected work" title={<>Proof, in<br /><em>the work.</em></>} intro="Each case starts with an operating constraint and ends with a specific change in time, accuracy, capacity or control." tone="green" />
+      <PageHero eyebrow="Selected work" title={<>Proof, in<br /><em>the work.</em></>} intro="Each case starts with an operating constraint and ends with a specific change in time, accuracy, capacity or control." tone="blue" />
 
       <section className="work-index section-pad">
         <SectionIntro eyebrow="Production case studies" title={<>What changed<br /><em>after the system.</em></>} text="Client identities remain confidential. The workflow, system and qualified results remain specific." />
