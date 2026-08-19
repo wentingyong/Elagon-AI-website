@@ -11,13 +11,7 @@ export default function Home() {
     <>
       <HeroScroll />
 
-      <section id="positioning" className="positioning-section section-pad">
-        <p className="eyebrow" data-reveal>Built for the real world</p>
-        <h2 data-reveal>One critical workflow.<br /><em>One measurable change.</em></h2>
-        <p data-reveal>Elagon redesigns important work and builds production AI around the people, data and decisions that make it work.</p>
-      </section>
-
-      <section className="selected-work section-pad">
+      <section id="work" className="selected-work section-pad">
         <SectionIntro eyebrow="Selected work" title={<>The outcome<br /><em>is the story.</em></>} text="Measured in time, accuracy and capacity—not demonstrations." />
         <div className="home-work-grid"><CaseCard item={cases[0]} featured /><div>{cases.slice(1).map((item) => <CaseCard key={item.slug} item={item} />)}</div></div>
         <PrimaryCTA href="/work">View all work</PrimaryCTA>

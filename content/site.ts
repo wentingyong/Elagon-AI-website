@@ -14,8 +14,13 @@ export const heroHeadline: SplitHeadlineData = {
   connectorBottom: "that lasts.",
 };
 
-export const heroMission =
+export const heroLede =
   "Elagon redesigns important work and builds production AI around the people, data and decisions that make it work.";
+
+export const heroInterlude = ["One critical workflow.", "One measurable change."] as const;
+
+export const heroMission =
+  "AI is already everywhere. What most businesses still lack is the ability to turn it into more capacity, better margins, faster decisions, and a business that depends less on manual work and individual knowledge.";
 
 export const services = [
   {

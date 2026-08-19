@@ -83,6 +83,12 @@ export const heroScript: HeroStep[] = [
   { target: '[data-hs="s2-a"]', at: [0.45, 0.58], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
   { target: '[data-hs="s2-a"]', at: [0.45, 0.6], from: { scale: 1.12 }, to: { scale: 1.06 }, ease: "power2.out" },
 
+  // ——— serif interlude riding the sky change: two centered lines in, then out before the arch forms
+  { target: ".hs-il-1", at: [0.44, 0.49], from: { autoAlpha: 0, y: 26 }, to: { autoAlpha: 1, y: 0 }, ease: "power2.out" },
+  { target: ".hs-il-2", at: [0.465, 0.515], from: { autoAlpha: 0, y: 26 }, to: { autoAlpha: 1, y: 0 }, ease: "power2.out" },
+  { target: ".hs-il-1", at: [0.575, 0.615], from: { autoAlpha: 1, y: 0 }, to: { autoAlpha: 0, y: -24 }, ease: "power2.in" },
+  { target: ".hs-il-2", at: [0.585, 0.625], from: { autoAlpha: 1, y: 0 }, to: { autoAlpha: 0, y: -24 }, ease: "power2.in" },
+
   // ——— S2 entrance: pull back into the colonnade (0.60–0.85)
   { target: '[data-hs="s2-b"]', at: [0.58, 0.63], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
   { target: '[data-hs="s2-b"]', at: [0.6, 0.78], from: { yPercent: 18, scale: 1.15 }, to: { yPercent: 0, scale: 1 }, ease: "power2.out" },

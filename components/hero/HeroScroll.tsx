@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { Fragment, useEffect, useLayoutEffect, useRef, useSyncExternalStore } from "react";
-import { heroHeadline, heroMission } from "@/content/site";
+import { heroHeadline, heroInterlude, heroLede, heroMission } from "@/content/site";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ArrowIcon } from "@/components/ArrowIcon";
 import { DigitalRain } from "@/components/hero/DigitalRain";
@@ -19,14 +19,22 @@ import {
 const SCENE_LABEL =
   "Pixel-dithered classical landscape: a temple above a lake city, dissolving into a colonnade interior overlooking the water";
 
+/** Left-anchored copy block: big word + inline connector per line, lede paragraph below. */
 export function SplitHeadline() {
   return (
-    <h1 className="split-headline" aria-label={`${heroHeadline.primaryTop} ${heroHeadline.connectorTop} ${heroHeadline.primaryBottom} ${heroHeadline.connectorBottom}`}>
-      <span className="hero-word word-ai" aria-hidden="true">{heroHeadline.primaryTop}</span>
-      <span className="hero-connector connector-works" aria-hidden="true">{heroHeadline.connectorTop}</span>
-      <span className="hero-word word-value" aria-hidden="true">{heroHeadline.primaryBottom}</span>
-      <span className="hero-connector connector-lasts" aria-hidden="true">{heroHeadline.connectorBottom}</span>
-    </h1>
+    <div className="hero-copy">
+      <h1 className="split-headline" aria-label={`${heroHeadline.primaryTop} ${heroHeadline.connectorTop} ${heroHeadline.primaryBottom} ${heroHeadline.connectorBottom}`}>
+        <span className="hero-line">
+          <span className="hero-word word-ai" aria-hidden="true">{heroHeadline.primaryTop}</span>
+          <span className="hero-connector connector-works" aria-hidden="true">{heroHeadline.connectorTop}</span>
+        </span>
+        <span className="hero-line">
+          <span className="hero-word word-value" aria-hidden="true">{heroHeadline.primaryBottom}</span>
+          <span className="hero-connector connector-lasts" aria-hidden="true">{heroHeadline.connectorBottom}</span>
+        </span>
+      </h1>
+      <p className="hero-lede">{heroLede}</p>
+    </div>
   );
 }
 
@@ -55,6 +63,10 @@ function HeroStatic() {
       </div>
       <div className="hs-static-panel">
         <Image src={HERO_ASSETS.s2Poster} alt="" fill sizes="100vw" />
+        <h2 className="hs-interlude hs-interlude-static">
+          <span>{heroInterlude[0]}</span>
+          <span>{heroInterlude[1]}</span>
+        </h2>
         <p className="hs-mission hs-mission-static">{heroMission}</p>
       </div>
     </section>
@@ -93,15 +105,19 @@ export function HeroScroll() {
       };
 
       context = gsap.context(() => {
-        // ——— one-shot intro; a real scroll takes over and finishes it instantly
+        // ——— one-shot intro, strictly sequential: AI → that works. → Value → that lasts. → lede.
+        // Clip-wipes, not opacity — the scrubbed exit owns opacity/autoAlpha on all of these
+        // (conflicting writers strand the scrub state).
         const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
         intro
-          .fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 1.1, ease: "none" }, 0)
-          .fromTo(".hero-word", { clipPath: "inset(100% 0 0 0)", y: 48 }, { clipPath: "inset(0% 0 0 0)", y: 0, duration: 1.05, stagger: 0.18 }, 0.45)
-          // clip-wipe, not opacity — the scrubbed exit owns opacity/autoAlpha on these (conflicting writers strand the scrub state)
-          .fromTo(".hero-connector", { x: -36, clipPath: "inset(0 100% 0 0)" }, { x: 0, clipPath: "inset(0 0% 0 0)", duration: 0.8, stagger: 0.16 }, 1)
-          .fromTo(".site-header", { y: -24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, 1.3)
-          .fromTo(".hero-scroll", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 1.5);
+          .fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 1, ease: "none" }, 0)
+          .fromTo(".word-ai", { clipPath: "inset(100% 0 0 0)", y: 44 }, { clipPath: "inset(0% 0 0 0)", y: 0, duration: 0.85 }, 0.35)
+          .fromTo(".connector-works", { x: -30, clipPath: "inset(0 100% 0 0)" }, { x: 0, clipPath: "inset(0 0% 0 0)", duration: 0.65 }, 0.9)
+          .fromTo(".word-value", { clipPath: "inset(100% 0 0 0)", y: 44 }, { clipPath: "inset(0% 0 0 0)", y: 0, duration: 0.85 }, 1.2)
+          .fromTo(".connector-lasts", { x: -30, clipPath: "inset(0 100% 0 0)" }, { x: 0, clipPath: "inset(0 0% 0 0)", duration: 0.65 }, 1.75)
+          .fromTo(".hero-lede", { y: 24, clipPath: "inset(0 0 100% 0)" }, { y: 0, clipPath: "inset(0 0 0% 0)", duration: 0.8 }, 2.15)
+          .fromTo(".site-header", { y: -24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, 2.3)
+          .fromTo(".hero-scroll", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 }, 2.5);
 
         // ——— the scrubbed master timeline: duration 1 ≡ p, pinned for HERO_TRAVEL_VH
         const timeline = gsap.timeline({
@@ -130,20 +146,21 @@ export function HeroScroll() {
           );
         }
 
-        // word-by-word headline exit, connectors trailing (§4, staggered-word-reveal)
+        // word-by-word headline exit in reading order, lede trailing last (§4, staggered-word-reveal)
         timeline.fromTo(
-          [".word-ai", ".connector-works", ".word-value", ".connector-lasts"],
+          [".word-ai", ".connector-works", ".word-value", ".connector-lasts", ".hero-lede"],
           { y: 0, autoAlpha: 1 },
           { y: -60, autoAlpha: 0, duration: 0.11, stagger: 0.0125, ease: "power2.in", immediateRender: false },
           0.15,
         );
 
-        // mission statement reveal inside the arch, p-driven cadence (§4 row 5)
+        // mission statement reveal inside the arch, p-driven cadence (§4 row 5);
+        // the longer copy starts as the arch settles so the last word lands at p=1
         timeline.fromTo(
           ".hs-word",
           { y: 26, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.04, stagger: 0.0065, ease: "power2.out", immediateRender: false },
-          0.85,
+          { y: 0, autoAlpha: 1, duration: 0.033, stagger: 0.0042, ease: "power2.out", immediateRender: false },
+          0.82,
         );
 
         // ——— idle-stage mouse parallax, fading out by p=0.15 (§4 row 1)
@@ -248,6 +265,11 @@ export function HeroScroll() {
 
       <SplitHeadline />
 
+      <h2 className="hs-interlude" aria-label={`${heroInterlude[0]} ${heroInterlude[1]}`}>
+        <span className="hs-il hs-il-1" aria-hidden="true">{heroInterlude[0]}</span>
+        <span className="hs-il hs-il-2" aria-hidden="true">{heroInterlude[1]}</span>
+      </h2>
+
       <div className="hs-mission">
         <p aria-label={heroMission}>
           <span aria-hidden="true">
@@ -261,7 +283,7 @@ export function HeroScroll() {
       <div className="hs-handoff hs-s2" aria-hidden="true" />
       <div className="hs-nav-blur" aria-hidden="true"><i /><i /></div>
       <SiteHeader overlay />
-      <a className="hero-scroll" href="#positioning"><span>Scroll to explore</span><i><ArrowIcon direction="down" /></i></a>
+      <a className="hero-scroll" href="#work"><span>Scroll to explore</span><i><ArrowIcon direction="down" /></i></a>
     </section>
   );
 }
