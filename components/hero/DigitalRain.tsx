@@ -5,7 +5,7 @@ import { RAIN_SURGE, type HeroMotion } from "@/components/hero/heroSequence";
 
 const GLYPHS = "ELAGON01×+·—".split("");
 
-type Column = { x: number; y: number; v: number; size: number; cell: number };
+type Column = { x: number; y: number; v: number; size: number; cell: number; head: string };
 
 /** 0→1 inside the dissolve band, ramping over RAIN_SURGE.ramp at both edges. */
 function surge(p: number): number {
@@ -33,11 +33,12 @@ export function DigitalRain({ band, motionRef }: { band: "back" | "front"; motio
     if (!canvas || !ctx || !motion) return;
 
     const front = band === "front";
-    const spacing = front ? 26 : 34;
-    const fontPx = front ? 15 : 11;
-    const baseSpeed = front ? 150 : 95; // px/s
-    const ink = front ? "rgba(226, 205, 150, 0.72)" : "rgba(201, 190, 155, 0.4)";
-    const headInk = front ? "rgba(240, 232, 210, 0.95)" : "rgba(233, 226, 208, 0.55)";
+    const spacing = front ? 22 : 28;
+    const fontPx = front ? 18 : 13;
+    const baseSpeed = front ? 170 : 110; // px/s
+    // gold-shifted from brand cream so the streaks read against both sky blue and cloud beige
+    const ink = front ? "rgba(232, 204, 132, 0.9)" : "rgba(214, 196, 148, 0.6)";
+    const headInk = front ? "rgba(248, 240, 214, 1)" : "rgba(238, 230, 206, 0.8)";
 
     let w = 0;
     let h = 0;
@@ -52,6 +53,7 @@ export function DigitalRain({ band, motionRef }: { band: "back" | "front"; motio
       c.v = baseSpeed * (0.6 + Math.random() * 0.8);
       c.size = fontPx * (0.85 + Math.random() * 0.3);
       c.cell = -1;
+      c.head = GLYPHS[(Math.random() * GLYPHS.length) | 0];
     };
 
     const resize = () => {
@@ -66,7 +68,7 @@ export function DigitalRain({ band, motionRef }: { band: "back" | "front"; motio
       // column pool holds surge headroom (density ×1.5)
       const count = Math.ceil((w / spacing) * (1 + RAIN_SURGE.density));
       cols = Array.from({ length: count }, (_, i) => {
-        const c: Column = { x: 0, y: 0, v: 0, size: 0, cell: -1 };
+        const c: Column = { x: 0, y: 0, v: 0, size: 0, cell: -1, head: GLYPHS[0] };
         respawn(c, (i % Math.ceil(w / spacing)) * spacing);
         c.y = Math.random() * h * 1.4 - h * 0.4; // pre-seed mid-fall
         return c;
@@ -92,8 +94,9 @@ export function DigitalRain({ band, motionRef }: { band: "back" | "front"; motio
       cleared = false;
 
       const s = surge(motion.p);
+      // slow fade → long readable trails
       ctx.globalCompositeOperation = "destination-out";
-      ctx.fillStyle = "rgba(0, 0, 0, 0.085)";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.055)";
       ctx.fillRect(0, 0, w, h);
       ctx.globalCompositeOperation = "source-over";
 
@@ -106,11 +109,17 @@ export function DigitalRain({ band, motionRef }: { band: "back" | "front"; motio
         c.y += c.v * speedMult * dt;
         if (c.y > h + 40) respawn(c, c.x);
         const cell = Math.floor(c.y / c.size);
-        if (cell === c.cell) continue; // draw once per glyph step
-        c.cell = cell;
         ctx.font = `${c.size}px ui-monospace, Menlo, monospace`;
-        ctx.fillStyle = Math.random() < 0.12 ? headInk : ink;
-        ctx.fillText(GLYPHS[(Math.random() * GLYPHS.length) | 0], c.x, cell * c.size);
+        if (cell !== c.cell) {
+          // trail glyph stamped once per step, then left to fade
+          c.cell = cell;
+          ctx.fillStyle = Math.random() < 0.15 ? headInk : ink;
+          ctx.fillText(GLYPHS[(Math.random() * GLYPHS.length) | 0], c.x, cell * c.size);
+          c.head = GLYPHS[(Math.random() * GLYPHS.length) | 0];
+        }
+        // bright head redrawn every frame so each column stays clearly visible
+        ctx.fillStyle = headInk;
+        ctx.fillText(c.head, c.x, (cell + 1) * c.size);
       }
     };
     raf = requestAnimationFrame(step);
