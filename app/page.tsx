@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { ArrowIcon } from "@/components/ArrowIcon";
-import { CaseCard } from "@/components/CaseCard";
 import { FinalCTA, SectionIntro } from "@/components/Editorial";
 import { HeroScroll } from "@/components/hero/HeroScroll";
 import { PrimaryCTA } from "@/components/PrimaryCTA";
+import { CaseArtwork } from "@/components/work/CaseArtwork";
+import { SelectedWorkRail } from "@/components/work/SelectedWorkRail";
+import { WorkRailCard } from "@/components/work/WorkRailCard";
 import { cases, services, systemLayers } from "@/content/site";
 
 export default function Home() {
@@ -11,11 +13,12 @@ export default function Home() {
     <>
       <HeroScroll />
 
-      <section id="work" className="selected-work section-pad">
-        <SectionIntro eyebrow="Selected work" title={<>The outcome<br /><em>is the story.</em></>} text="Measured in time, accuracy and capacity—not demonstrations." />
-        <div className="home-work-grid"><CaseCard item={cases[0]} featured /><div>{cases.slice(1).map((item) => <CaseCard key={item.slug} item={item} />)}</div></div>
-        <PrimaryCTA href="/work">View all work</PrimaryCTA>
-      </section>
+      <SelectedWorkRail
+        intro={<SectionIntro eyebrow="Selected work" title={<>The outcome<br /><em>is the story.</em></>} text="Measured in time, accuracy and capacity—not demonstrations." />}
+        cta={<PrimaryCTA href="/work">View all work</PrimaryCTA>}
+      >
+        {cases.map((item) => <WorkRailCard key={item.slug} item={item} art={<CaseArtwork art={item.art} />} />)}
+      </SelectedWorkRail>
 
       <section className="home-services section-pad">
         <SectionIntro eyebrow="How to begin" title={<>Find the value.<br /><em>Prove the path. Put it to work.</em></>} />

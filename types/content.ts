@@ -46,4 +46,7 @@ export interface CaseStudy {
   delivered: string[];
   measurementNote: string;
   accent: "moss" | "rust" | "sky";
+  cardTitle: string;
+  stat: { value: string; unit?: string; label: string };
+  art: string;
 }
