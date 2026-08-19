@@ -149,7 +149,7 @@ export const cases: CaseStudy[] = [
     workflow: ["Jira", "Compose", "Review", "Distribute"],
     delivered: ["Jira-connected workflow", "Template and style system", "Batch communications generation", "Least-privilege access and human approval"],
     measurementNote: "Time and labour-value figures are estimates based on five users, three hours saved per user per week and an illustrative $50 hourly cost.",
-    accent: "moss",
+    accent: "sky",
     cardTitle: "Communications Automation",
     stat: { value: "~750", unit: "hrs", label: "Reclaim annual capacity" },
     art: "case-02",

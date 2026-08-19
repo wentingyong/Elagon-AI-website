@@ -8,6 +8,7 @@ export function WorkRailCard({ item, art }: { item: CaseStudy; art: React.ReactN
     <Link
       href={`/work/${item.slug}`}
       className="swr-card"
+      data-art={item.art}
       aria-label={`${item.cardTitle} — ${item.code}. ${stat.value}${stat.unit ? ` ${stat.unit}` : ""}, ${stat.label}.`}
     >
       <article className="swr-card-inner">

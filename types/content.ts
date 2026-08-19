@@ -45,7 +45,7 @@ export interface CaseStudy {
   workflow: string[];
   delivered: string[];
   measurementNote: string;
-  accent: "moss" | "rust" | "sky";
+  accent: "rust" | "sky";
   cardTitle: string;
   stat: { value: string; unit?: string; label: string };
   art: string;
