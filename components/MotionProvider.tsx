@@ -6,6 +6,34 @@ import { usePathname } from "next/navigation";
 export function MotionProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  // Lenis smooth scrolling driven by the gsap ticker — required for jitter-free
+  // ScrollTrigger pinning (hero plan §8 caution 1). Created once per mount.
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+    void Promise.all([import("gsap"), import("gsap/ScrollTrigger"), import("lenis")]).then(([gsapModule, triggerModule, lenisModule]) => {
+      if (cancelled) return;
+      const gsap = gsapModule.default;
+      const ScrollTrigger = triggerModule.ScrollTrigger;
+      const Lenis = lenisModule.default;
+      gsap.registerPlugin(ScrollTrigger);
+      const lenis = new Lenis({ anchors: true });
+      lenis.on("scroll", ScrollTrigger.update);
+      const raf = (time: number) => lenis.raf(time * 1000);
+      gsap.ticker.add(raf);
+      gsap.ticker.lagSmoothing(0);
+      cleanup = () => {
+        gsap.ticker.remove(raf);
+        lenis.destroy();
+      };
+    });
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, []);
+
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let context: { revert: () => void } | undefined;
