@@ -83,9 +83,9 @@ export const heroScript: HeroStep[] = [
   { target: '[data-hs="s2-a"]', at: [0.45, 0.58], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
   { target: '[data-hs="s2-a"]', at: [0.45, 0.6], from: { scale: 1.12 }, to: { scale: 1.06 }, ease: "power2.out" },
 
-  // ——— serif interlude riding the sky change: two centered lines in, then out before the arch forms
-  { target: ".hs-il-1", at: [0.44, 0.49], from: { autoAlpha: 0, y: 26 }, to: { autoAlpha: 1, y: 0 }, ease: "power2.out" },
-  { target: ".hs-il-2", at: [0.465, 0.515], from: { autoAlpha: 0, y: 26 }, to: { autoAlpha: 1, y: 0 }, ease: "power2.out" },
+  // ——— serif interlude riding the sky change: words reveal via the scrub (stagger
+  // built in HeroScroll on .hs-il-word); the LINES exit before the arch forms —
+  // parent vs child targets, so the two motions never write the same property
   { target: ".hs-il-1", at: [0.575, 0.615], from: { autoAlpha: 1, y: 0 }, to: { autoAlpha: 0, y: -24 }, ease: "power2.in" },
   { target: ".hs-il-2", at: [0.585, 0.625], from: { autoAlpha: 1, y: 0 }, to: { autoAlpha: 0, y: -24 }, ease: "power2.in" },
 

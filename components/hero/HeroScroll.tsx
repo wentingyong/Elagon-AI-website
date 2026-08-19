@@ -154,6 +154,14 @@ export function HeroScroll() {
           0.15,
         );
 
+        // interlude word-by-word reveal riding the sky dissolve
+        timeline.fromTo(
+          ".hs-il-word",
+          { y: 30, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.045, stagger: 0.014, ease: "power2.out", immediateRender: false },
+          0.44,
+        );
+
         // mission statement reveal inside the arch, p-driven cadence (§4 row 5);
         // the longer copy starts as the arch settles so the last word lands at p=1
         timeline.fromTo(
@@ -266,8 +274,13 @@ export function HeroScroll() {
       <SplitHeadline />
 
       <h2 className="hs-interlude" aria-label={`${heroInterlude[0]} ${heroInterlude[1]}`}>
-        <span className="hs-il hs-il-1" aria-hidden="true">{heroInterlude[0]}</span>
-        <span className="hs-il hs-il-2" aria-hidden="true">{heroInterlude[1]}</span>
+        {heroInterlude.map((line, lineIndex) => (
+          <span key={lineIndex} className={`hs-il hs-il-${lineIndex + 1}`} aria-hidden="true">
+            {line.split(" ").map((word, index) => (
+              <Fragment key={index}><span className="hs-il-word">{word}</span>{" "}</Fragment>
+            ))}
+          </span>
+        ))}
       </h2>
 
       <div className="hs-mission">

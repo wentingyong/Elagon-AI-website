@@ -119,11 +119,10 @@ html.lenis, html.lenis body { height: auto; }
 .hs-mission { position: absolute; left: 51.5%; top: 45%; width: min(28rem, 31vw); transform: translate(-50%, -50%); text-align: center; }
 .hs-mission p { position: relative; margin: 0; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1rem, 1.3vw, 1.4rem); line-height: 1.5; text-shadow: 0 1px 14px rgb(10 10 6 / 60%); }
 .hs-word { display: inline-block; opacity: 0; visibility: hidden; }
-/* serif interlude riding the sky dissolve: two centered lines, ink + moss like the section it replaces */
-.hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-wrap: unset; }
-.hs-il { display: block; opacity: 0; visibility: hidden; }
-.hs-il-1 { color: var(--ink-primary); }
-.hs-il-2 { color: var(--brand-moss); }
+/* serif interlude riding the sky dissolve: two centered white lines, revealed word by word */
+.hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-shadow: 0 1px 18px rgb(10 10 6 / 55%); text-wrap: unset; }
+.hs-il { display: block; }
+.hs-il-word { display: inline-block; opacity: 0; visibility: hidden; }
 .hs-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 24vh; pointer-events: none; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 55%, transparent) 55%, var(--brand-cream)); }
 .hs-nav-blur { position: absolute; top: 0; right: 0; left: 0; height: 8.5rem; pointer-events: none; }
 .hs-nav-blur i { position: absolute; inset: 0; }
@@ -526,5 +525,5 @@ html.lenis, html.lenis body { height: auto; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
-  .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
+  .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il, .hs-il-word { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
 }
