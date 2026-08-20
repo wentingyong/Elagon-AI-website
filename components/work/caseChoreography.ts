@@ -63,7 +63,9 @@ export function buildEntrance(gsap: GSAPCore, root: Element, art: string): Timel
       // Batch → Process → Distribute (~1.9s, snappiest)
       reveal(gsap, tl, root, "sweep", "ltr", 0.5, 0);
       reveal(gsap, tl, root, "ring", "ltr", 0.3, 0.45, "power2.out");
-      enterFrom(tl, el(root, "ringDetail"), { rotation: -18, svgOrigin: "535 285", duration: 0.5, ease: "power2.out" }, 0.55);
+      // autoAlpha too: this group sits outside every clip, so without it the
+      // ring's inner rim floats alone on the card before the storyboard runs
+      enterFrom(tl, el(root, "ringDetail"), { rotation: -18, autoAlpha: 0, svgOrigin: "535 285", duration: 0.5, ease: "power2.out" }, 0.55);
       reveal(gsap, tl, root, "branchTop", "ltr", 0.35, 0.85, "power2.out");
       reveal(gsap, tl, root, "branchMid", "ltr", 0.35, 0.95, "power2.out");
       reveal(gsap, tl, root, "branchBot", "ltr", 0.35, 1.05, "power2.out");

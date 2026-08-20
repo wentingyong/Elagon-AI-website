@@ -173,14 +173,15 @@ html.lenis, html.lenis body { height: auto; }
    antialiases a dark hairline there — this covers it with the same flat cream */
 .selected-work { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-cream); }
 /* — selected work: pinned horizontal rail (homepage only, swr- prefix) — */
-.swr { display: flex; height: 100svh; min-height: 40rem; flex-direction: column; padding: clamp(2rem, 4vh, 3rem) 0 clamp(1.5rem, 3vh, 2.5rem); }
-.swr .section-intro { margin: 0 var(--gutter) clamp(1.5rem, 3vh, 2.5rem); }
-.swr .section-intro h2 { font-size: clamp(2.6rem, 5vw, 5rem); }
+.swr { display: block; }
+.swr-intro { padding: clamp(4rem, 11vh, 8rem) var(--gutter) clamp(3rem, 7vh, 5rem); }
+.swr-intro .section-intro { margin: 0; }
+/* the pinned stage: cards own the whole viewport, like the reference */
+.swr-stage { display: flex; height: 100svh; min-height: 34rem; flex-direction: column; justify-content: center; overflow: hidden; padding: clamp(1.5rem, 3vh, 2.5rem) 0; }
 .swr-cta { display: flex; flex: none; align-self: center; align-items: center; padding-right: var(--gutter); }
 .swr-viewport { min-height: 0; flex: 1; overflow: hidden; }
-.swr-track { display: flex; height: 100%; width: max-content; align-items: flex-start; gap: clamp(1.5rem, 2.5vw, 2.5rem); padding: 0 clamp(3rem, 8vw, 8rem) 0 var(--gutter); }
-.swr-card { display: block; height: calc(100% - clamp(2rem, 5vh, 3.5rem)); width: clamp(300px, 24vw, 400px); }
-.swr-card:nth-child(even) { margin-top: clamp(2rem, 5vh, 3.5rem); }
+.swr-track { display: flex; height: 100%; width: max-content; align-items: center; gap: clamp(1.5rem, 2.5vw, 2.5rem); padding: 0 clamp(3rem, 8vw, 8rem) 0 var(--gutter); }
+.swr-card { display: block; height: 76%; width: clamp(300px, 33vw, 480px); transform-origin: left center; will-change: transform; }
 /* hover inversion = one custom-property swap; the consuming properties transition */
 .swr-card {
   --card-bg: var(--brand-sky); --card-ink: var(--ink-primary);
@@ -495,11 +496,11 @@ html.lenis, html.lenis body { height: auto; }
   .service-panel { min-height: 31rem; }
   .case-card.is-featured { grid-column: auto; grid-template-columns: 1fr; grid-template-rows: auto; }
   /* rail: no pin below 768px — vertical stack, cards reveal on vertical scroll */
-  .swr { height: auto; min-height: 0; padding: 4rem 0; }
+  .swr-intro { padding: 4rem var(--gutter) 2.5rem; }
+  .swr-stage { display: block; height: auto; min-height: 0; overflow: visible; padding: 0 0 4rem; }
   .swr-viewport { overflow: visible; }
   .swr-track { flex-direction: column; height: auto; width: auto; align-items: stretch; gap: 1.5rem; padding: 0 var(--gutter); }
-  .swr-card { height: auto; width: 100%; }
-  .swr-card:nth-child(even) { margin-top: 0; }
+  .swr-card { height: auto; width: 100%; transform: none; }
   .swr-card-inner { height: auto; min-height: 32rem; }
   .swr-cta { align-self: flex-start; padding: 1rem 0 0; }
   .case-hero { grid-template-columns: 1fr; }
@@ -570,5 +571,5 @@ html.lenis, html.lenis body { height: auto; }
   .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il, .hs-il-word { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
   /* rail degrades to a native horizontal scroller, everything visible */
   .swr-viewport { overflow-x: auto !important; }
-  .swr-track { transform: none !important; }
+  .swr-track, .swr-card { transform: none !important; }
 }
