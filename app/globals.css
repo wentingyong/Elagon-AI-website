@@ -395,8 +395,9 @@ html.lenis, html.lenis body { height: auto; }
 .team-card { min-width: 0; border-right: 1px solid var(--border-inverse); }
 .team-card:last-child { border-right: 0; }
 .team-portrait { position: relative; aspect-ratio: 5 / 6; overflow: hidden; background: var(--brand-sky); }
-.team-portrait img { object-fit: cover; object-position: center top; filter: saturate(.72) contrast(.98); transition: transform var(--duration-slow) var(--ease-enter), filter var(--duration-base) var(--ease-enter); }
-.team-card:hover .team-portrait img { transform: scale(1.025); filter: saturate(1) contrast(1); }
+.team-portrait { --portrait-zoom: 1.08; }
+.team-portrait img { object-fit: cover; object-position: center top; transform-origin: center top; transform: translateY(var(--portrait-pan, 0)) scale(var(--portrait-zoom)); filter: saturate(.72) contrast(.98); transition: transform var(--duration-slow) var(--ease-enter), filter var(--duration-base) var(--ease-enter); }
+.team-card:hover .team-portrait img { transform: translateY(var(--portrait-pan, 0)) scale(calc(var(--portrait-zoom) * 1.025)); filter: saturate(1) contrast(1); }
 .team-card-copy { display: grid; align-content: start; padding: clamp(1.5rem, 2.5vw, 2.5rem); }
 .team-card-copy > span { font-size: .7rem; letter-spacing: .14em; }
 .team-card-copy h2 { min-height: 2em; margin: 3rem 0 .8rem; font-family: var(--font-editorial); font-size: clamp(2.4rem, 3.4vw, 4rem); font-weight: 400; line-height: .9; }

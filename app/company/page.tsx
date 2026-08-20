@@ -23,7 +23,7 @@ export default function CompanyPage() {
         <div className="team-grid">
           {teamMembers.map((member) => (
             <article className="team-card" key={member.name} data-reveal>
-              <div className="team-portrait"><Image src={member.photo} alt={`${member.name}, ${member.role}`} fill loading="eager" sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 25vw" /></div>
+              <div className="team-portrait" style={{ "--portrait-pan": member.pan } as React.CSSProperties}><Image src={member.photo} alt={`${member.name}, ${member.role}`} fill loading="eager" sizes="(max-width: 767px) 100vw, (max-width: 1023px) 50vw, 25vw" /></div>
               <div className="team-card-copy"><span>{member.number}</span><h2>{member.name}</h2><p className="team-role">{member.role}</p><p>{member.bio}</p><small>Accountable for</small><strong>{member.accountable}</strong></div>
             </article>
           ))}
