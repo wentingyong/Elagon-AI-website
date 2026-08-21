@@ -240,6 +240,7 @@ export const teamMembers = [
     bio: "Founder and CEO. Jordan sets Elagon’s strategic direction and builds the partnerships and enterprise relationships that turn market opportunities into engagements.",
     accountable: "Strategy · Partnerships · Growth",
     photo: "/team/jordan.webp",
+    pan: "-3.28%",
   },
   {
     number: "02",
@@ -248,6 +249,7 @@ export const teamMembers = [
     bio: "Umar leads market strategy and solution direction from first diagnosis through implementation, connecting business priorities to practical delivery.",
     accountable: "Market Strategy · Solution Shaping · Engagements",
     photo: "/team/umar.webp",
+    pan: "-2.53%",
   },
   {
     number: "03",
@@ -256,6 +258,7 @@ export const teamMembers = [
     bio: "Amine architects secure, scalable AI systems and leads the technical decisions required to move complex work into dependable production.",
     accountable: "Architecture · Security · Production Delivery",
     photo: "/team/amine.webp",
+    pan: "-5.77%",
   },
   {
     number: "04",
@@ -264,6 +267,7 @@ export const teamMembers = [
     bio: "Wenting leads brand, design and digital experience, translating Elagon’s strategy into a coherent and accessible market presence.",
     accountable: "Brand · Design System · Digital Experience",
     photo: "/team/wenting.webp",
+    pan: "-6.63%",
   },
 ] as const;
 
