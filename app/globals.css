@@ -153,17 +153,19 @@ html.lenis, html.lenis body { height: auto; }
 /* ——— Where we work: pinned frame stage (components/where/whereSequence.ts) ——— */
 /* overlaps the rail's pinned stage by 2px — same fractional-pixel hairline fix as .selected-work */
 .where-work { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-cream); }
-.wf-stage { --wf-base: 1.06; --wf-rail: 22%; --wb: clamp(9.5rem, 16.5vw, 19rem); --wb-step: calc(var(--wb) + .4rem); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100svh; min-height: 40rem; overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; perspective: 1400px; }
+.wf-stage { --wf-base: 1.06; --wf-rail: 22%; --wb: min(35svh, 22vw); --wb-step: calc(var(--wb) * 1.025); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100svh; min-height: 40rem; overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; perspective: 1400px; }
 .wf-plane { position: absolute; inset: 0; }
 /* will-change only while the stage is pinned — this is the page's third pinned stage (§8 risk 5) */
 .wf-stage.is-live .wf-move { will-change: transform; }
-/* stage z-order, explicit so a stray filter/opacity can't reflatten it. The blocks sit UNDER
-   the frame so the leaf fringe eats their corners — that is what sells the depth; the copy
-   sits ABOVE it, because a fringe clipping a descender is just unreadable. */
+/* stage z-order, explicit so a stray filter/opacity can't reflatten it. The plate is the
+   section's FOREGROUND: blocks and copy both sit under it, so the leaf fringe eats their
+   edges — that is what sells the depth. Only the eyebrow (on the canopy, scrimmed) and the
+   closing beat ride above. */
 .wf-ground { z-index: 1; background: radial-gradient(ellipse at 42% 46%, color-mix(in srgb, #fff 38%, var(--brand-cream)) 0%, var(--brand-cream) 62%); }
 .wf-boxes { z-index: 2; }
 .wf-frame { z-index: 3; }
-.wf-eyebrow, .wf-copy, .wf-close { z-index: 4; }
+.wf-copy { z-index: 2; }
+.wf-eyebrow, .wf-close { z-index: 4; }
 .wf-handoff { z-index: 5; }
 .wf-ground, .wf-frame, .wf-eyebrow, .wf-copy, .wf-close, .wf-handoff { pointer-events: none; }
 .wf-close .primary-cta { pointer-events: auto; }
@@ -177,16 +179,17 @@ html.lenis, html.lenis body { height: auto; }
    A text-shadow cannot fix that; the localized wash lands the worst pixel at ~8:1 (design system §8.3) */
 .wf-eyebrow { position: absolute; left: 7%; top: 10%; margin: 0; color: var(--brand-cream); }
 .wf-eyebrow::before { content: ""; position: absolute; z-index: -1; inset: -.85rem -1.6rem; background: radial-gradient(ellipse at center, rgb(20 24 14 / 66%) 0%, rgb(20 24 14 / 38%) 55%, transparent 82%); }
-.wf-copy { position: absolute; left: var(--wf-rail); top: 39%; width: 38%; max-width: 36rem; }
+.wf-copy { position: absolute; left: 23%; top: 43%; width: 37%; max-width: 36rem; }
 .wf-copy h2 { margin: 0 0 clamp(1.6rem, 3vw, 3rem); color: var(--brand-rust); font-family: var(--font-editorial); font-size: clamp(2.4rem, 4.6vw, 4.8rem); font-weight: 400; line-height: .92; letter-spacing: -.05em; text-wrap: unset; }
 .wf-h2-word { display: inline-block; }
 .wf-lede { max-width: 27rem; margin: 0; font-size: var(--body-lg); }
-/* diagonal staircase, sized off the scene-2 still (block ≈ 19.5% of stage width, corner-to-corner
-   step). --wb is capped so all three clear a 16:9 stage — the still crops block 3, we do not. */
+/* diagonal staircase at the still's scale: 35svh ≈ its 19.6%-of-width blocks at 16:9, on an
+   svh basis so ultrawide keeps the composition. Block 3 runs past the stage bottom and is
+   cropped mid-box — that is the still's crop, kept deliberately. */
 .wf-box { position: absolute; left: var(--wf-rail); width: var(--wb); height: var(--wb); }
-[data-wb="1"] { top: 7%; }
-[data-wb="2"] { left: calc(var(--wf-rail) + var(--wb-step)); top: calc(7% + var(--wb-step)); }
-[data-wb="3"] { top: calc(7% + var(--wb-step) * 2); }
+[data-wb="1"] { top: 13.5%; }
+[data-wb="2"] { left: calc(var(--wf-rail) + var(--wb-step)); top: calc(13.5% + var(--wb-step)); }
+[data-wb="3"] { top: calc(13.5% + var(--wb-step) * 2); }
 .wf-box-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .6s var(--ease-editorial); }
 .wf-box:hover .wf-box-card, .wf-box:focus-visible .wf-box-card { transform: rotateY(180deg); animation: none; }
 /* one-shot peek once the block has landed, so the flip affordance is discoverable without a
@@ -198,8 +201,10 @@ html.lenis, html.lenis body { height: auto; }
 .wf-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: var(--wf-pad); backface-visibility: hidden; background: var(--brand-rust); color: var(--brand-cream); }
 .wf-back { transform: rotateY(180deg); justify-content: center; }
 .wf-num { position: absolute; left: var(--wf-pad); top: var(--wf-pad); font-size: .8rem; letter-spacing: .18em; }
-.wf-box h3 { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.15rem, 1.75vw, 1.9rem); font-weight: 400; line-height: 1; letter-spacing: -.03em; text-wrap: unset; }
-.wf-back p { margin: 0; font-size: clamp(.8rem, .92vw, 1rem); line-height: 1.45; }
+.wf-box h3 { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.3rem, 2vw, 2.2rem); font-weight: 400; line-height: 1; letter-spacing: -.03em; text-wrap: unset; }
+.wf-back p { margin: 0; font-size: clamp(.85rem, 1vw, 1.05rem); line-height: 1.45; }
+/* block 3 is cropped by the stage bottom, so its flipped detail rides the VISIBLE upper half */
+[data-wb="3"] .wf-back { justify-content: flex-start; padding-top: calc(var(--wf-pad) + 2.2rem); }
 .wf-box i { position: absolute; right: var(--wf-pad); bottom: var(--wf-pad); display: grid; width: 2.2rem; height: 2.2rem; place-items: center; border: 1px solid currentColor; border-radius: 50%; transition: transform var(--duration-base) var(--ease-enter); }
 .wf-box i svg { width: 1rem; height: 1rem; }
 .wf-box:hover i { transform: rotate(-35deg); }
@@ -211,7 +216,7 @@ html.lenis, html.lenis body { height: auto; }
 .wf-close .primary-cta { margin-top: clamp(1.8rem, 3vw, 3rem); }
 /* short cream fade: hides the pin's fractional-pixel bottom edge and settles the plate's
    foliage into the ground plane behind the closing statement */
-.wf-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 16vh; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 65%, transparent) 55%, var(--brand-cream) 92%); }
+.wf-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 12vh; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 55%, transparent) 62%, var(--brand-cream) 96%); }
 .wf-debug .wf-plane, .wf-debug .wf-frame-inner { outline: 1px dashed rgb(255 80 80 / 80%); outline-offset: -1px; }
 
 /* the pinned branch — must stay exactly complementary to the stacked query below, and to

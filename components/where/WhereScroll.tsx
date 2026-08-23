@@ -10,7 +10,7 @@ import {
   BOX_WINDOWS,
   CLOSE_OPEN,
   CLOSE_SETTLE,
-  tiltFactor,
+  panToBottomPct,
   WHERE_ASSETS,
   WHERE_QUERY,
   WHERE_TRAVEL_VH,
@@ -52,12 +52,13 @@ export function WhereScroll() {
       mm = matcher;
 
       matcher.add(WHERE_QUERY, () => {
-        // yPercent is re-resolved on every refresh: the tilt is clamped to the headroom the
-        // pre-scale bought, so the plate's open bottom edge never enters the stage
-        const fit = (vars: Record<string, number>): Record<string, unknown> => {
+        // the frame pan's yPercent is re-resolved on every refresh so the plate's bottom edge
+        // lands exactly on the stage bottom (whereSequence: scene 2 is bottom-anchored). Other
+        // planes keep their static drift values.
+        const fit = (target: string, vars: Record<string, number>): Record<string, unknown> => {
           const travel = vars.yPercent;
-          if (travel === undefined) return vars;
-          return { ...vars, yPercent: () => travel * tiltFactor(stage.clientWidth, stage.clientHeight) };
+          if (travel === undefined || target !== '[data-wf="frame"]') return vars;
+          return { ...vars, yPercent: travel === 0 ? 0 : () => panToBottomPct(stage.clientWidth, stage.clientHeight) };
         };
 
         const peeked = new Set<number>();
@@ -93,8 +94,8 @@ export function WhereScroll() {
         for (const step of whereScript) {
           timeline.fromTo(
             step.target,
-            fit(step.from),
-            { ...fit(step.to), ease: step.ease, duration: step.at[1] - step.at[0], immediateRender: false },
+            fit(step.target, step.from),
+            { ...fit(step.target, step.to), ease: step.ease, duration: step.at[1] - step.at[0], immediateRender: false },
             step.at[0],
           );
         }

@@ -18,9 +18,11 @@ export const WHERE_ASSETS = { frame: "/where/where-frame.webp" } as const;
 
 /**
  * Frame plane geometry. The plate is zero-bleed on top/left/right and OPEN at the bottom
- * (465 of 1432px transparent in the last row) — and the tilt moves the image up, spending
- * exactly that bottom headroom. So the cover box is pre-scaled by `base` and the tilt is
- * clamped at runtime to whatever headroom that bought.
+ * (465 of 1432px transparent in the last row). Scene 2 is a BOTTOM-ANCHORED frame: the pan
+ * lands the plate's bottom edge on the stage bottom, so the opaque bottom corners (left wall,
+ * right columns and urn) terminate on the edge exactly like the still, and the transparent
+ * bottom region shows the cream ground with no hard edge. Only top/left/right remain
+ * no-expose edges — the downward pan only ever helps them.
  *
  * CAUTION: `base` must stay in lockstep with --wf-base in globals.css.
  */
@@ -28,9 +30,8 @@ export const FRAME = {
   ratio: 1432 / 962, // 1.48857
   base: 1.06, // === --wf-base
   idle: 1.02, // the slow breath across the idle beat
-  dolly: 1.15, // scale at the end of the camera move (measured off the scene-2 still)
-  tilt: -18, // yPercent of the STAGE box — the planes are inset:0, so % === stage %
-  safety: 0.9, // never spend more than 90% of the measured headroom
+  dolly: 1.12, // scale at the end of the camera move — the still's scene 2 is barely more zoomed; the drama is the pan
+  overshoot: 1, // % of stage height the bottom edge tucks past the stage bottom (rounding guard)
 } as const;
 
 export type WhereStep = {
@@ -53,11 +54,11 @@ export const whereScript: WhereStep[] = [
   // ——— idle (0–0.12): a slow breath so the stage never reads as a flat still
   { target: '[data-wf="frame"]', at: [0, 0.12], from: { scale: 1 }, to: { scale: 1.02 }, ease: "none" },
 
-  // ——— camera (0.18–0.48): dolly in and tilt down together. Same window, same ease, on purpose:
-  // the dolly is what buys the vertical headroom the tilt spends, so the two must advance in
-  // lockstep or a mid-move frame exposes the plate's open bottom edge (see headroomPct below).
-  { target: '[data-wf="frame"]', at: [0.18, 0.48], from: { scale: 1.02 }, to: { scale: 1.15 }, ease: "power2.inOut" },
-  { target: '[data-wf="frame"]', at: [0.18, 0.48], from: { yPercent: 0 }, to: { yPercent: -18 }, ease: "power2.inOut" },
+  // ——— camera (0.18–0.48): dolly in and pan down together, landing on the bottom anchor.
+  // The pan's yPercent here is NOMINAL — WhereScroll resolves it to panToBottomPct() per
+  // refresh, so the plate's bottom edge lands exactly on the stage bottom at every viewport.
+  { target: '[data-wf="frame"]', at: [0.18, 0.48], from: { scale: 1.02 }, to: { scale: 1.12 }, ease: "power2.inOut" },
+  { target: '[data-wf="frame"]', at: [0.18, 0.48], from: { yPercent: 0 }, to: { yPercent: -27 }, ease: "power2.inOut" },
   // the staircase is sized to clear the stage on its own, so it does NOT ride the -18 tilt —
   // it only drifts, which keeps the plane alive against the frame without breaking the fit
   { target: ".wf-boxes", at: [0.42, 0.8], from: { yPercent: 0 }, to: { yPercent: -4 }, ease: "none" },
@@ -93,17 +94,13 @@ export const BOX_WINDOWS = [[0.42, 0.87], [0.49, 0.88], [0.56, 0.89]] as const;
 export const CLOSE_SETTLE = 0.98;
 export const CLOSE_OPEN = 0.92;
 
-/** Vertical headroom of the cover box, as a percentage of stage height, measured at the
- *  fully-dollied scale — which is where the tilt reaches full amplitude. Both ramp on the same
- *  eased window and the dolly's headroom grows faster than the tilt spends it, so checking the
- *  end point is sufficient for the whole move. */
-export function headroomPct(stageW: number, stageH: number) {
+/** The scene-2 pan target, as a yPercent of the stage box: the travel that moves the plate's
+ *  bottom edge from its centered rest position onto the stage bottom at the fully-dollied
+ *  scale, plus the overshoot. Negative (upward image travel === camera panning down). */
+export function panToBottomPct(stageW: number, stageH: number) {
+  if (!stageW || !stageH) return -FRAME.overshoot;
   const frameH = (Math.max(stageW, stageH * FRAME.ratio) * FRAME.base * FRAME.dolly) / FRAME.ratio;
-  return ((frameH - stageH) / 2 / stageH) * 100;
-}
-
-/** 0–1 scaler applied to every yPercent in the script; 1 when the headroom covers the full tilt. */
-export function tiltFactor(stageW: number, stageH: number) {
-  if (!stageW || !stageH) return 1;
-  return Math.min(1, (headroomPct(stageW, stageH) * FRAME.safety) / Math.abs(FRAME.tilt));
+  // + overshoot: pan slightly LESS than exact alignment, so the edge tucks below the stage
+  // bottom and crops invisibly — panning past it would drag a hard edge into view instead
+  return -((frameH / stageH - 1) / 2) * 100 + FRAME.overshoot;
 }
