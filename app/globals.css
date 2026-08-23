@@ -78,7 +78,7 @@ html.lenis, html.lenis body { height: auto; }
 .desktop-nav a:hover::after, .desktop-nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
 .contact-pill { justify-self: end; display: flex; min-height: 62px; align-items: center; gap: clamp(1.25rem, 2.4vw, 2.75rem); padding: .45rem .55rem .45rem clamp(1.5rem, 2vw, 2.4rem); border-radius: 100px; background: var(--brand-rust); color: var(--text-on-image); font-size: clamp(.85rem, 1.1vw, 1.2rem); }
 .contact-pill span, .primary-cta span { display: grid; width: 2.8rem; height: 2.8rem; place-items: center; border-radius: 50%; background: var(--text-on-image); color: var(--brand-rust); transition: transform var(--duration-base) var(--ease-enter); }
-.contact-pill svg, .primary-cta svg, .case-card a svg, .service-panel a svg { width: 1.2rem; height: 1.2rem; }
+.contact-pill svg, .primary-cta svg, .case-card a svg { width: 1.2rem; height: 1.2rem; }
 .contact-pill:hover span, .primary-cta:hover span { transform: rotate(-35deg); }
 .menu-toggle { display: none; width: 44px; height: 44px; border: 0; background: transparent; color: currentColor; }
 .menu-toggle span { display: block; width: 24px; height: 1px; margin: 6px auto; background: currentColor; transition: transform var(--duration-base), opacity var(--duration-base); }
@@ -150,6 +150,116 @@ html.lenis, html.lenis body { height: auto; }
 .hero-scroll i { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--border-inverse); border-radius: 50%; }
 .hero-scroll svg { width: 1.2rem; height: 1.2rem; }
 
+/* ——— Where we work: pinned frame stage (components/where/whereSequence.ts) ——— */
+/* overlaps the rail's pinned stage by 2px — same fractional-pixel hairline fix as .selected-work */
+.where-work { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-cream); }
+.wf-stage { --wf-base: 1.06; --wf-rail: 22%; --wb: clamp(9.5rem, 16.5vw, 19rem); --wb-step: calc(var(--wb) + .4rem); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100svh; min-height: 40rem; overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; perspective: 1400px; }
+.wf-plane { position: absolute; inset: 0; }
+/* will-change only while the stage is pinned — this is the page's third pinned stage (§8 risk 5) */
+.wf-stage.is-live .wf-move { will-change: transform; }
+/* stage z-order, explicit so a stray filter/opacity can't reflatten it. The blocks sit UNDER
+   the frame so the leaf fringe eats their corners — that is what sells the depth; the copy
+   sits ABOVE it, because a fringe clipping a descender is just unreadable. */
+.wf-ground { z-index: 1; background: radial-gradient(ellipse at 42% 46%, color-mix(in srgb, #fff 38%, var(--brand-cream)) 0%, var(--brand-cream) 62%); }
+.wf-boxes { z-index: 2; }
+.wf-frame { z-index: 3; }
+.wf-eyebrow, .wf-copy, .wf-close { z-index: 4; }
+.wf-handoff { z-index: 5; }
+.wf-ground, .wf-frame, .wf-eyebrow, .wf-copy, .wf-close, .wf-handoff { pointer-events: none; }
+.wf-close .primary-cta { pointer-events: auto; }
+/* the frame plane is inset:0 so GSAP's yPercent === % of the STAGE box; the oversized cover
+   box lives inside it and is centred with `translate` so nothing writes transform twice.
+   width = cover × --wf-base: the pre-scale buys the vertical headroom the tilt spends, and the
+   plate is zero-bleed on three edges and OPEN at the bottom. 148.86svh = ratio × 100. */
+.wf-frame-inner { position: absolute; left: 50%; top: 50%; width: calc(max(100%, 148.86svh) * var(--wf-base)); translate: -50% -50%; }
+.wf-frame-inner img { display: block; width: 100%; height: auto; }
+/* the eyebrow sits on the canopy, whose p90 luminance is ~141 → cream reads 2.5:1 unscrimmed.
+   A text-shadow cannot fix that; the localized wash lands the worst pixel at ~8:1 (design system §8.3) */
+.wf-eyebrow { position: absolute; left: 7%; top: 10%; margin: 0; color: var(--brand-cream); }
+.wf-eyebrow::before { content: ""; position: absolute; z-index: -1; inset: -.85rem -1.6rem; background: radial-gradient(ellipse at center, rgb(20 24 14 / 66%) 0%, rgb(20 24 14 / 38%) 55%, transparent 82%); }
+.wf-copy { position: absolute; left: var(--wf-rail); top: 39%; width: 38%; max-width: 36rem; }
+.wf-copy h2 { margin: 0 0 clamp(1.6rem, 3vw, 3rem); color: var(--brand-rust); font-family: var(--font-editorial); font-size: clamp(2.4rem, 4.6vw, 4.8rem); font-weight: 400; line-height: .92; letter-spacing: -.05em; text-wrap: unset; }
+.wf-h2-word { display: inline-block; }
+.wf-lede { max-width: 27rem; margin: 0; font-size: var(--body-lg); }
+/* diagonal staircase, sized off the scene-2 still (block ≈ 19.5% of stage width, corner-to-corner
+   step). --wb is capped so all three clear a 16:9 stage — the still crops block 3, we do not. */
+.wf-box { position: absolute; left: var(--wf-rail); width: var(--wb); height: var(--wb); }
+[data-wb="1"] { top: 7%; }
+[data-wb="2"] { left: calc(var(--wf-rail) + var(--wb-step)); top: calc(7% + var(--wb-step)); }
+[data-wb="3"] { top: calc(7% + var(--wb-step) * 2); }
+.wf-box-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .6s var(--ease-editorial); }
+.wf-box:hover .wf-box-card, .wf-box:focus-visible .wf-box-card { transform: rotateY(180deg); animation: none; }
+/* one-shot peek once the block has landed, so the flip affordance is discoverable without a
+   hover. One iteration only — the design system forbids continuous decorative animation. */
+.wf-box.is-peeked .wf-box-card { animation: wf-peek 2.6s var(--ease-editorial); }
+[data-wb="2"].is-peeked .wf-box-card { animation-delay: .3s; }
+[data-wb="3"].is-peeked .wf-box-card { animation-delay: .6s; }
+@keyframes wf-peek { 0%, 8% { transform: rotateY(0); } 30%, 74% { transform: rotateY(180deg); } 96%, 100% { transform: rotateY(0); } }
+.wf-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: var(--wf-pad); backface-visibility: hidden; background: var(--brand-rust); color: var(--brand-cream); }
+.wf-back { transform: rotateY(180deg); justify-content: center; }
+.wf-num { position: absolute; left: var(--wf-pad); top: var(--wf-pad); font-size: .8rem; letter-spacing: .18em; }
+.wf-box h3 { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.15rem, 1.75vw, 1.9rem); font-weight: 400; line-height: 1; letter-spacing: -.03em; text-wrap: unset; }
+.wf-back p { margin: 0; font-size: clamp(.8rem, .92vw, 1rem); line-height: 1.45; }
+.wf-box i { position: absolute; right: var(--wf-pad); bottom: var(--wf-pad); display: grid; width: 2.2rem; height: 2.2rem; place-items: center; border: 1px solid currentColor; border-radius: 50%; transition: transform var(--duration-base) var(--ease-enter); }
+.wf-box i svg { width: 1rem; height: 1rem; }
+.wf-box:hover i { transform: rotate(-35deg); }
+/* closing beat: keeps the section's left rail rather than centring, so the eyebrow, headline,
+   staircase and statement all sit on one axis */
+.wf-close { position: absolute; left: var(--wf-rail); top: 32%; width: 40%; max-width: 38rem; }
+.wf-close p { margin: 0; color: var(--brand-rust); font-family: var(--font-editorial); font-size: clamp(1.9rem, 3.5vw, 3.6rem); font-weight: 400; line-height: .98; letter-spacing: -.045em; text-wrap: unset; }
+.wf-cl-word { display: inline-block; }
+.wf-close .primary-cta { margin-top: clamp(1.8rem, 3vw, 3rem); }
+/* short cream fade: hides the pin's fractional-pixel bottom edge and settles the plate's
+   foliage into the ground plane behind the closing statement */
+.wf-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 16vh; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 65%, transparent) 55%, var(--brand-cream) 92%); }
+.wf-debug .wf-plane, .wf-debug .wf-frame-inner { outline: 1px dashed rgb(255 80 80 / 80%); outline-offset: -1px; }
+
+/* the pinned branch — must stay exactly complementary to the stacked query below, and to
+   WHERE_QUERY in whereSequence.ts. Scene-2 elements start hidden here (and on a no-JS first
+   paint), exactly as .hs-s2 does for the hero. */
+@media (min-width: 900px) and (min-aspect-ratio: 5 / 4) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .wf-box, .wf-close .primary-cta { opacity: 0; pointer-events: none; }
+  .wf-cl-word, .wf-handoff { opacity: 0; visibility: hidden; }
+  /* the blocks and the pill keep visibility (and therefore the tab order) at every p; the
+     scrub opens their mouse target only while they are actually on screen */
+  .wf-box.is-open { pointer-events: auto; }
+  .is-outro .wf-close .primary-cta { pointer-events: auto; }
+}
+
+/* the stacked branch: no pin registers, so CSS unwinds the stage into normal flow and every
+   detail is open. Touch is here too — a flip card with no hover is a dead end. Must stay
+   exactly complementary to the pinned query above. */
+@media (max-width: 899px), (max-aspect-ratio: 5 / 4), (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .wf-stage { display: flex; height: auto; min-height: 0; flex-direction: column; overflow: visible; perspective: none; }
+  .wf-ground, .wf-handoff { display: none; }
+  /* the plate becomes a full-width banner at its own aspect, capped and cropped from the top
+     on tall viewports. DOM order stays h2 → h3s for the heading outline, so `order` is what
+     puts the banner first visually. */
+  .wf-frame { position: relative; order: -1; inset: auto; max-height: 52svh; overflow: hidden; }
+  .wf-frame-inner { position: relative; left: auto; top: auto; width: 100%; translate: none; }
+  /* the copy leaves the plate for the cream below it — cream on foliage never reads at this size */
+  .wf-eyebrow, .wf-copy, .wf-close { position: static; width: auto; max-width: none; }
+  .wf-eyebrow { padding: clamp(2.5rem, 9vw, 4rem) var(--gutter) 0; color: var(--brand-rust); }
+  .wf-eyebrow::before { display: none; }
+  .wf-copy { padding: 1.2rem var(--gutter) clamp(2.5rem, 8vw, 4rem); }
+  .wf-copy h2 { margin-bottom: 1.2rem; font-size: clamp(1.9rem, 7.4vw, 3rem); }
+  .wf-lede { max-width: 30rem; font-size: 1.05rem; }
+  /* staircase → a hairline-separated stack with both faces flattened into one block */
+  .wf-boxes { position: static; display: grid; gap: 1px; background: var(--border-primary); }
+  .wf-box { position: static; width: auto; height: auto; }
+  .wf-box-card { height: auto; transform: none !important; transform-style: flat; animation: none !important; }
+  .wf-face { position: static; display: block; padding: clamp(1.4rem, 5vw, 2.2rem); backface-visibility: visible; }
+  .wf-front { padding-bottom: 0; }
+  .wf-back { padding-top: .9rem; transform: none; }
+  .wf-back .wf-num { display: none; } /* the front face already carries it */
+  .wf-num { position: static; display: block; margin-bottom: clamp(2rem, 7vw, 3rem); }
+  .wf-box h3 { font-size: clamp(1.5rem, 6vw, 2.1rem); }
+  .wf-back p { font-size: 1rem; }
+  .wf-box i { position: static; margin-top: 1.4rem; }
+  .wf-close { padding: clamp(3rem, 9vw, 5rem) var(--gutter) 0; }
+  .wf-close p { font-size: clamp(1.6rem, 6.4vw, 2.4rem); }
+}
+
 .section-intro { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1.5rem; margin-bottom: clamp(4rem, 9vw, 9rem); }
 .section-intro .eyebrow { grid-column: 1 / 4; }
 .section-intro h2 { grid-column: 1 / 10; margin: 0; font-family: var(--font-editorial); font-size: var(--display-editorial); font-weight: 400; line-height: .9; letter-spacing: -.055em; }
@@ -157,18 +267,8 @@ html.lenis, html.lenis body { height: auto; }
 .primary-cta { display: inline-flex; min-height: 52px; align-items: center; gap: 2rem; margin-top: 3rem; padding: .4rem .45rem .4rem 1.5rem; border: 1px solid currentColor; border-radius: 100px; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
 .primary-cta.is-inverse { color: var(--brand-cream); }
 
-.home-services { background: var(--surface-deep); color: var(--brand-cream); }
-.home-services .section-intro em, .playbook-preview .section-intro em { color: var(--brand-sky); }
-.service-triptych { display: grid; grid-template-columns: repeat(3, 1fr); }
-.service-panel { display: flex; min-height: 38rem; flex-direction: column; justify-content: space-between; padding: clamp(1.5rem, 3vw, 3rem); color: var(--ink-primary); }
-.service-panel.tone-moss { background: var(--brand-moss); color: var(--brand-cream); }
-.service-panel.tone-sky { background: var(--brand-sky); }
-.service-panel.tone-rust { background: var(--brand-rust); color: var(--brand-cream); }
-.service-panel > span { font-size: .85rem; letter-spacing: .18em; }
+.playbook-preview .section-intro em { color: var(--brand-sky); }
 .service-offer { margin-bottom: .8rem; font-size: .7rem !important; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
-.service-panel h3 { margin-bottom: 1.5rem; font-family: var(--font-editorial); font-size: clamp(2.8rem, 4.2vw, 5rem); font-weight: 400; line-height: .9; letter-spacing: -.05em; }
-.service-panel p { max-width: 26rem; font-size: var(--body-lg); }
-.service-panel a { display: inline-flex; min-height: 44px; align-items: center; gap: .5rem; margin-top: 1.5rem; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
 /* overlaps the hero's bottom edge by 2px: the pinned stage's fractional-pixel edge
    antialiases a dark hairline there — this covers it with the same flat cream */
 .selected-work { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-cream); }
@@ -224,7 +324,7 @@ html.lenis, html.lenis body { height: auto; }
 .case-copy .case-card-proof { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-primary); font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .case-copy a { display: inline-flex; min-height: 44px; align-items: center; gap: .5rem; margin-top: 1rem; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
 .case-copy a span { display: inline-flex; width: 1.3rem; }
-.playbook-preview { background: var(--brand-moss); color: var(--brand-cream); }
+.playbook-preview { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-moss); color: var(--brand-cream); }
 .playbook-steps { border-top: 1px solid var(--border-inverse); }
 .playbook-steps article { display: grid; grid-template-columns: 1fr 4fr 4fr; gap: 1.5rem; align-items: start; padding: 3rem 0; border-bottom: 1px solid var(--border-inverse); }
 .playbook-steps h3 { margin: 0; font-family: var(--font-editorial); font-size: clamp(2.5rem, 5vw, 5.5rem); font-weight: 400; line-height: .9; }
@@ -493,8 +593,6 @@ html.lenis, html.lenis body { height: auto; }
   .hero-scroll span { display: none; }
   .section-intro, .final-cta, .page-hero { display: block; }
   .section-intro > p:last-child { margin-top: 2rem; }
-  .service-triptych { grid-template-columns: 1fr; }
-  .service-panel { min-height: 31rem; }
   .case-card.is-featured { grid-column: auto; grid-template-columns: 1fr; grid-template-rows: auto; }
   /* rail: no pin below 768px — vertical stack, cards reveal on vertical scroll */
   .swr-intro { padding: 4rem var(--gutter) 2.5rem; }

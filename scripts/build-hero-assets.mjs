@@ -1,14 +1,16 @@
 /**
- * Hero scroll-transition asset pipeline (doc/Hero_Scroll_Transition_Implementation_Plan.md §2).
- * PNG layers in public/hero → WebP + static scene composites for reduced-motion/poster fallbacks.
+ * Scroll-stage asset pipeline (doc/Hero_Scroll_Transition_Implementation_Plan.md §2).
+ * PNG layers in public/hero → WebP + static scene composites for reduced-motion/poster fallbacks,
+ * plus the single "where we work" frame plate (components/where/whereSequence.ts).
  *
  *   node scripts/build-hero-assets.mjs
  */
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
-const HERO_DIR = path.resolve(import.meta.dirname, "../public/hero");
+const PUBLIC_DIR = path.resolve(import.meta.dirname, "../public");
+const HERO_DIR = path.join(PUBLIC_DIR, "hero");
 const QUALITY = 82;
 
 const LAYERS = [
@@ -26,6 +28,10 @@ const COMPOSITES = [
   { out: "hero-s2-poster.webp", stack: ["2-A.png", "2-B.png", "2-C.png"] },
 ];
 
+/** Single plates that live outside public/hero. Source dir keeps the delivered name; the
+ *  shipped URL gets the convention one (the source folder is misspelled `servies`). */
+const PLATES = [["servies/3-A.png", "where/where-frame.webp"]];
+
 let total = 0;
 
 for (const [src, out] of LAYERS) {
@@ -42,6 +48,14 @@ for (const { out, stack } of COMPOSITES) {
     .webp({ quality: QUALITY })
     .toBuffer();
   await writeFile(path.join(HERO_DIR, out), buffer);
+  total += buffer.length;
+  console.log(`${out}  ${(buffer.length / 1024).toFixed(0)}KB`);
+}
+
+for (const [src, out] of PLATES) {
+  const buffer = await sharp(path.join(PUBLIC_DIR, src)).webp({ quality: QUALITY }).toBuffer();
+  await mkdir(path.dirname(path.join(PUBLIC_DIR, out)), { recursive: true });
+  await writeFile(path.join(PUBLIC_DIR, out), buffer);
   total += buffer.length;
   console.log(`${out}  ${(buffer.length / 1024).toFixed(0)}KB`);
 }

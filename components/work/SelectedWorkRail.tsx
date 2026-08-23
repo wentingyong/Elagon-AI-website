@@ -111,6 +111,7 @@ export function SelectedWorkRail({ intro, cta, children }: { intro: React.ReactN
               scrub: RAIL.SCRUB,
               anticipatePin: 1,
               invalidateOnRefresh: true,
+              refreshPriority: 2, // hero 3 > rail 2 > where 1 — three pins must refresh in document order
               onRefreshInit: measure,
               onRefresh: positionPass,
               onUpdate: positionPass,

@@ -130,6 +130,7 @@ export function HeroScroll() {
             scrub: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
+            refreshPriority: 3, // hero 3 > rail 2 > where 1 — three pins must refresh in document order
             onUpdate: (self) => {
               motion.p = self.progress;
               if (self.progress > 0.05 && intro.isActive()) intro.progress(1);

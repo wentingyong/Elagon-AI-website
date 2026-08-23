@@ -22,6 +22,22 @@ export const heroInterlude = ["One critical workflow.", "One measurable change."
 export const heroMission =
   "AI is already everywhere. What most businesses still lack is the ability to turn it into more capacity, better margins, faster decisions, and a business that depends less on manual work and individual knowledge.";
 
+/** "Where we work" — copy for the pinned frame stage (components/where/whereSequence.ts). */
+export const whereWeWork = {
+  eyebrow: "Where we work",
+  title: "Where complexity slows the business down.",
+  lede: "Elagon focuses on critical workflows where information, judgment, and coordination create operational friction.",
+  close: "We redesign these workflows and build the systems required to run them better.",
+} as const;
+
+/** The three frictions, one per block of the diagonal staircase. Each links to the
+ *  engagement that answers it — the anchors exist in app/services/page.tsx. */
+export const frictions = [
+  { number: "01", title: "Too much information", detail: "Documents, data, and institutional knowledge are difficult to search, interpret, or act on." },
+  { number: "02", title: "Too many manual decisions", detail: "Experienced teams spend time repeating work that software and AI can support more effectively." },
+  { number: "03", title: "Too many disconnected steps", detail: "Work moves between systems, spreadsheets, people, and processes that were never designed to operate together." },
+] as const;
+
 export const services = [
   {
     number: "01",
