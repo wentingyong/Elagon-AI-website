@@ -33,10 +33,19 @@ export function SplitHeadline() {
           <span className="hero-connector connector-lasts" aria-hidden="true">{heroHeadline.connectorBottom}</span>
         </span>
       </h1>
-      <p className="hero-lede">{heroLede}</p>
+      <p className="hero-lede" aria-label={heroLede}>
+        <span aria-hidden="true">{words(heroLede, "hero-lede-word")}</span>
+      </p>
     </div>
   );
 }
+
+/** Word spans: every hero text block is split so each word can carry its own frosted lozenge.
+ *  The parent holds the real text as an aria-label and the spans are hidden from AT. */
+const words = (text: string, className: string) =>
+  text.split(" ").map((word, index) => (
+    <Fragment key={index}><span className={className}>{word}</span>{" "}</Fragment>
+  ));
 
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -67,7 +76,9 @@ function HeroStatic() {
           <span>{heroInterlude[0]}</span>
           <span>{heroInterlude[1]}</span>
         </h2>
-        <p className="hs-mission hs-mission-static">{heroMission}</p>
+        <p className="hs-mission hs-mission-static" aria-label={heroMission}>
+          <span aria-hidden="true">{words(heroMission, "hs-word")}</span>
+        </p>
       </div>
     </section>
   );
@@ -106,9 +117,14 @@ export function HeroScroll() {
 
       context = gsap.context(() => {
         // ——— one-shot intro, strictly sequential: AI → that works. → Value → that lasts. → lede.
-        // Clip-wipes, not opacity — the scrubbed exit owns opacity/autoAlpha on all of these
-        // (conflicting writers strand the scrub state).
-        const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+        // Clip-wipes, not opacity — the scrubbed exit owns --w-a on all of these (conflicting
+        // writers strand the scrub state), and element opacity would kill each word's lozenge.
+        // the wipe must not outlive the intro: clip-path creates a backdrop root, so leaving it
+        // on these nodes leaves each word's frosted lozenge with nothing to sample. The end
+        // state is inset(0), a visual no-op, so clearing it changes nothing on screen.
+        const clearWipe = () =>
+          gsap.set(".word-ai, .connector-works, .word-value, .connector-lasts, .hero-lede", { clearProps: "clipPath" });
+        const intro = gsap.timeline({ defaults: { ease: "power3.out" }, onComplete: clearWipe });
         intro
           .fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 1, ease: "none" }, 0)
           .fromTo(".word-ai", { clipPath: "inset(100% 0 0 0)", y: 44 }, { clipPath: "inset(0% 0 0 0)", y: 0, duration: 0.85 }, 0.35)
@@ -133,7 +149,7 @@ export function HeroScroll() {
             refreshPriority: 3, // hero 3 > rail 2 > where 1 — three pins must refresh in document order
             onUpdate: (self) => {
               motion.p = self.progress;
-              if (self.progress > 0.05 && intro.isActive()) intro.progress(1);
+              if (self.progress > 0.05 && intro.isActive()) { intro.progress(1); clearWipe(); }
             },
           },
         });
@@ -150,16 +166,16 @@ export function HeroScroll() {
         // word-by-word headline exit in reading order, lede trailing last (§4, staggered-word-reveal)
         timeline.fromTo(
           [".word-ai", ".connector-works", ".word-value", ".connector-lasts", ".hero-lede"],
-          { y: 0, autoAlpha: 1 },
-          { y: -60, autoAlpha: 0, duration: 0.11, stagger: 0.0125, ease: "power2.in", immediateRender: false },
+          { y: 0, "--w-a": 1 },
+          { y: -60, "--w-a": 0, duration: 0.11, stagger: 0.0125, ease: "power2.in", immediateRender: false },
           0.15,
         );
 
         // interlude word-by-word reveal riding the sky dissolve
         timeline.fromTo(
           ".hs-il-word",
-          { y: 30, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.045, stagger: 0.014, ease: "power2.out", immediateRender: false },
+          { y: 30, "--w-a": 0 },
+          { y: 0, "--w-a": 1, duration: 0.045, stagger: 0.014, ease: "power2.out", immediateRender: false },
           0.44,
         );
 
@@ -167,8 +183,8 @@ export function HeroScroll() {
         // the longer copy starts as the arch settles so the last word lands at p=1
         timeline.fromTo(
           ".hs-word",
-          { y: 26, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.033, stagger: 0.0042, ease: "power2.out", immediateRender: false },
+          { y: 26, "--w-a": 0 },
+          { y: 0, "--w-a": 1, duration: 0.033, stagger: 0.0042, ease: "power2.out", immediateRender: false },
           0.82,
         );
 
@@ -277,9 +293,7 @@ export function HeroScroll() {
       <h2 className="hs-interlude" aria-label={`${heroInterlude[0]} ${heroInterlude[1]}`}>
         {heroInterlude.map((line, lineIndex) => (
           <span key={lineIndex} className={`hs-il hs-il-${lineIndex + 1}`} aria-hidden="true">
-            {line.split(" ").map((word, index) => (
-              <Fragment key={index}><span className="hs-il-word">{word}</span>{" "}</Fragment>
-            ))}
+            {words(line, "hs-il-word")}
           </span>
         ))}
       </h2>
@@ -287,9 +301,7 @@ export function HeroScroll() {
       <div className="hs-mission">
         <p aria-label={heroMission}>
           <span aria-hidden="true">
-            {heroMission.split(" ").map((word, index) => (
-              <Fragment key={index}><span className="hs-word">{word}</span>{" "}</Fragment>
-            ))}
+            {words(heroMission, "hs-word")}
           </span>
         </p>
       </div>

@@ -8,6 +8,7 @@
   --surface-deep: #263121;
   --ink-primary: #1f241d;
   --text-on-image: #f7f5ef;
+  --text-on-image-rgb: 247 245 239;
   --surface-page: var(--brand-cream);
   --surface-inverse: var(--surface-deep);
   --text-primary: var(--ink-primary);
@@ -35,6 +36,23 @@
   --ease-enter: cubic-bezier(.16, 1, .3, 1);
   --ease-exit: cubic-bezier(.7, 0, .84, 0);
   --ease-editorial: cubic-bezier(.77, 0, .18, 1);
+  --glass-word: blur(8px) brightness(.64) saturate(1.12);
+  /* em, not %: a percentage feather scales with the box, so on 14rem words it ate most of the
+     lozenge and left the glyphs in the fade. In em the soft edge sits a fixed step outside the
+     letters at every size. */
+  --glass-feather: linear-gradient(to right, transparent, #000 .5em, #000 calc(100% - .5em), transparent), linear-gradient(to bottom, transparent, #000 .5em, #000 calc(100% - .5em), transparent);
+  --z-base: 0;
+  --z-media: 10;
+  --z-copy: 20;
+  --z-header: 50;
+  --z-menu: 100;
+  /* per-glyph halo for light text over imagery: a tight edge for definition, a mid lift, and a
+     wide soft pool that darkens only the pixels around each letter — the legibility of a scrim
+     without laying a block of shadow over the plate */
+  /* em, not %: a percentage feather scales with the box, so on 14rem words it ate most of the
+     lozenge and left the glyphs in the fade. In em the soft edge sits a fixed step outside the
+     letters at every size. */
+  --glass-feather: linear-gradient(to right, transparent, #000 .5em, #000 calc(100% - .5em), transparent), linear-gradient(to bottom, transparent, #000 .5em, #000 calc(100% - .5em), transparent);
   --z-base: 0;
   --z-media: 10;
   --z-copy: 20;
@@ -118,6 +136,29 @@ html.lenis, html.lenis body { height: auto; }
 .hs-move { will-change: transform; }
 .hs-inner { position: absolute; inset: 0; }
 .hs-layer img { object-fit: cover; object-position: center; }
+/* ——— per-word frosted glass: each word carries its own backdrop blur, so it fades in and out
+   with that word and there is never a shadow shape sitting behind the copy. Padding is
+   cancelled by an equal negative margin, so the lozenges cost no layout; adjacent words
+   overlap into one soft band per line. brightness() is what buys the contrast — a blur only
+   defocuses, it cannot darken — and it reads as tinted glass rather than a shadow.
+   Dropped by the frame-rate probe: this is the page's most expensive compositing. */
+.hero-word, .hero-connector, .hero-lede-word, .hs-il-word, .hs-word { position: relative; color: rgb(var(--text-on-image-rgb) / var(--w-a, 1)); }
+/* --w-a is declared on the BLOCK, never on .hero-lede-word: GSAP animates the block and the
+   words inherit. A local declaration on the word would shadow the inherited value and the
+   lede would never leave. */
+.split-headline, .hero-lede, .hero-word, .hero-connector { --w-a: 1; }
+.hs-word { color: rgb(255 255 255 / var(--w-a, 1)); }
+/* the frosting rides a pseudo-element BEHIND the word, never the word itself: a mask applies to
+   everything an element paints, so masking the span would feather the glyphs away too. inset is
+   negative, so the lozenge costs no layout and neighbouring words blend into one soft band. */
+.hero-word::before, .hero-connector::before, .hero-lede-word::before, .hs-il-word::before, .hs-word::before {
+  content: ""; position: absolute; z-index: -1; inset: -.55em -.58em; opacity: var(--w-a, 1);
+  -webkit-backdrop-filter: var(--glass-word); backdrop-filter: var(--glass-word);
+  -webkit-mask-image: var(--glass-feather); mask-image: var(--glass-feather);
+  -webkit-mask-composite: source-in; mask-composite: intersect;
+}
+.hs-lite .hero-word::before, .hs-lite .hero-connector::before, .hs-lite .hero-lede-word::before, .hs-lite .hs-il-word::before, .hs-lite .hs-word::before { display: none; }
+
 /* zero-bleed mitigation: base scales give the mouse parallax travel headroom */
 [data-hsp="s1-b"] { transform: scale(1.02); }
 [data-hsp="s1-c"] { transform: scale(1.04); }
@@ -145,17 +186,12 @@ html.lenis, html.lenis body { height: auto; }
 /* the arch opening is 0.38–0.655 of 2-C, i.e. 547–943px on a 1440x810 stage; the column is
    held inside that with ~18px of air each side so no word touches a shaft */
 .hs-mission { position: absolute; left: 51.7%; top: 45%; width: min(27rem, 25vw); transform: translate(-50%, -50%); text-align: center; }
-/* the second half of the Figma spec: a background blur, not a scrim. It adds no darkness — it
-   just defocuses the halftone behind the copy so the bold white reads. Radially masked so it
-   has no edge of its own, and dropped with the rest of the effects on slow frames. */
-.hs-mission::before { content: ""; position: absolute; z-index: -1; inset: -16% -12%; -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px); -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 46%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 46%, transparent 100%); }
-.hs-lite .hs-mission::before { -webkit-backdrop-filter: none; backdrop-filter: none; }
-.hs-mission p { position: relative; margin: 0; color: #fff; font-family: var(--font-sans); font-size: clamp(1.35rem, 2.22vw, 2.5rem); font-weight: 700; line-height: 1.2; letter-spacing: -.011em; text-shadow: var(--halo-mission); }
-.hs-word { display: inline-block; opacity: 0; visibility: hidden; }
+.hs-mission p { position: relative; margin: 0; color: #fff; font-family: var(--font-sans); font-size: clamp(1.35rem, 2.22vw, 2.5rem); font-weight: 700; line-height: 1.2; letter-spacing: -.011em; }
+.hs-word { display: inline-block; --w-a: 0; }
 /* serif interlude riding the sky dissolve: two centered white lines, revealed word by word */
-.hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-shadow: var(--halo-display); text-wrap: unset; }
+.hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-wrap: unset; }
 .hs-il { display: block; }
-.hs-il-word { display: inline-block; opacity: 0; visibility: hidden; }
+.hs-il-word { display: inline-block; --w-a: 0; }
 /* solid cream from 80% down so the hero's last rows exactly match the next section — no seam line */
 .hs-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 26vh; pointer-events: none; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 60%, transparent) 45%, var(--brand-cream) 80%); }
 .hs-nav-blur { position: absolute; top: 0; right: 0; left: 0; height: 6.25rem; pointer-events: none; }
@@ -168,16 +204,17 @@ html.lenis, html.lenis body { height: auto; }
 .hero-stage-static { height: auto; min-height: 0; }
 .hs-static-panel { position: relative; height: 100svh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); }
 .hs-static-panel img { object-fit: cover; }
-.hs-mission-static { position: absolute; left: 50%; top: 52%; width: min(32rem, 84vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: #fff; font-family: var(--font-sans); font-size: clamp(1.35rem, 2.22vw, 2.5rem); font-weight: 700; line-height: 1.2; letter-spacing: -.011em; text-shadow: var(--halo-mission); }
+.hs-mission-static { position: absolute; left: 50%; top: 52%; width: min(32rem, 84vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: #fff; font-family: var(--font-sans); font-size: clamp(1.35rem, 2.22vw, 2.5rem); font-weight: 700; line-height: 1.2; letter-spacing: -.011em; }
 .hs-interlude-static { top: 22%; }
 .hs-interlude-static span { display: block; }
 /* left-anchored copy block (ref layout): big word + inline connector per line, lede below */
 .hero-copy { position: absolute; z-index: var(--z-copy); left: clamp(1.5rem, 4.5vw, 6rem); top: 30%; max-width: min(48rem, 52vw); }
-.split-headline { margin: 0; font-family: var(--font-sans); font-size: clamp(4.6rem, 11.5vw, 14rem); font-weight: 400; line-height: .98; letter-spacing: -.05em; text-shadow: var(--halo-display); }
+.split-headline { margin: 0; font-family: var(--font-sans); font-size: clamp(4.6rem, 11.5vw, 14rem); font-weight: 400; line-height: .98; letter-spacing: -.05em; }
 .hero-line { display: flex; align-items: baseline; gap: .08em; white-space: nowrap; }
-.hero-word { display: inline-block; will-change: transform, clip-path; }
+.hero-word { display: inline-block; will-change: transform; }
 .hero-connector { display: inline-block; font-size: .34em; font-weight: 400; letter-spacing: -.04em; line-height: 1; }
-.hero-lede { max-width: min(32rem, 38vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1.05rem, 1.4vw, 1.55rem); line-height: 1.45; text-shadow: var(--halo-ink); }
+.hero-lede-word { display: inline-block; }
+.hero-lede { max-width: min(32rem, 38vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1.05rem, 1.4vw, 1.55rem); line-height: 1.45; }
 .hero-scroll { display: none; position: absolute; z-index: 30; right: var(--gutter); bottom: 2rem; align-items: center; gap: 1rem; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 .hero-scroll i { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--border-inverse); border-radius: 50%; }
 .hero-scroll svg { width: 1.2rem; height: 1.2rem; }
@@ -215,7 +252,7 @@ html.lenis, html.lenis body { height: auto; }
 .wf-frame-inner { position: absolute; left: 50%; top: 50%; width: calc(max(100%, calc(var(--wf-ratio) * max(100svh, var(--wf-minh)))) * var(--wf-base)); translate: -50% -50%; }
 .wf-frame-inner img { display: block; width: 100%; height: auto; }
 /* the eyebrow sits on the canopy, whose p90 luminance is ~141 → cream reads 2.5:1 unscrimmed.
-   A text-shadow cannot fix that; the localized wash lands the worst pixel at ~8:1 (design system §8.3) */
+   a localized wash lands the worst pixel at ~8:1 (design system §8.3) */
 .wf-eyebrow { position: absolute; left: 7%; top: 10%; margin: 0; color: var(--brand-cream); }
 .wf-eyebrow::before { content: ""; position: absolute; z-index: -1; inset: -.85rem -1.6rem; background: radial-gradient(ellipse at center, rgb(20 24 14 / 66%) 0%, rgb(20 24 14 / 38%) 55%, transparent 82%); }
 .wf-copy { position: absolute; left: 23%; top: 43%; width: 37%; max-width: 36rem; }
@@ -764,7 +801,7 @@ html.lenis, html.lenis body { height: auto; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
-  .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il, .hs-il-word { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
+  .split-headline, .hero-word, .hero-connector, .hero-lede, .hero-lede-word, .hs-il, .hs-il-word, .hs-word { --w-a: 1 !important; opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
   /* rail degrades to a native horizontal scroller, everything visible */
   .swr-viewport { overflow-x: auto !important; }
   .swr-track, .swr-card { transform: none !important; }
