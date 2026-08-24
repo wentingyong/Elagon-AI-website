@@ -20,6 +20,9 @@
   --font-editorial: Georgia, "Times New Roman", serif;
   --display-hero: clamp(7rem, 16vw, 20rem);
   --display-editorial: clamp(3rem, 7vw, 7rem);
+  /* the quieter display step used by the numbered-row sections and the home CTA, where a
+     full-width display heading sat on top of an equally large list and read as shouting */
+  --display-editorial-sm: clamp(2.4rem, 4.6vw, 4.75rem);
   --display-page: clamp(3.6rem, 8.5vw, 9rem);
   --body-lg: clamp(1.05rem, 1.4vw, 1.35rem);
   --gutter: clamp(1rem, 3vw, 3rem);
@@ -37,6 +40,13 @@
   --z-copy: 20;
   --z-header: 50;
   --z-menu: 100;
+  /* per-glyph halo for light text over imagery: a tight edge for definition, a mid lift, and a
+     wide soft pool that darkens only the pixels around each letter — the legibility of a scrim
+     without laying a block of shadow over the plate */
+  /* display sizes take the halo in em so it scales with the type instead of clotting */
+  --halo-display: 0 0 .012em rgb(10 12 8 / 88%), 0 .006em .018em rgb(10 12 8 / 78%), 0 0 .05em rgb(10 12 8 / 60%), 0 0 .11em rgb(10 12 8 / 38%);
+  --halo-ink: 0 0 3px rgb(10 12 8 / 92%), 0 1px 4px rgb(10 12 8 / 82%), 0 0 9px rgb(10 12 8 / 70%), 0 0 20px rgb(10 12 8 / 46%);
+  --halo-ink-strong: 0 0 3px rgb(10 12 8 / 95%), 0 1px 4px rgb(10 12 8 / 90%), 0 0 9px rgb(10 12 8 / 80%), 0 0 18px rgb(10 12 8 / 60%), 0 0 34px rgb(10 12 8 / 38%);
 }
 
 * { box-sizing: border-box; }
@@ -122,7 +132,6 @@ html.lenis, html.lenis body { height: auto; }
 [data-hs="s1-d"] { z-index: 9; }
 [data-hs="s2-c"] { z-index: 10; }
 .hs-vignette { z-index: 11; }
-.hero-scrim { z-index: 12; }
 .hs-mission { z-index: 13; }
 .hs-handoff { z-index: 14; }
 .hs-nav-blur { z-index: 15; }
@@ -131,17 +140,11 @@ html.lenis, html.lenis body { height: auto; }
 .hs-s2 { opacity: 0; visibility: hidden; }
 .hs-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, transparent 36%, rgb(18 16 10 / 45%) 72%, rgb(18 16 10 / 78%) 100%); }
 /* width capped to the central arch opening (~0.38–0.655 of 2-C) so no word drapes onto the columns */
-/* the mission sits on open sky, the brightest thing in either scene — a text-shadow cannot
-   carry it (measured 2.15:1 at p90 against the required 4.5:1), so it gets its own soft
-   ellipse. Hidden until the scroll script reveals it, like every other scene-2 element. */
-.hs-mission { position: absolute; left: 51.5%; top: 45%; width: min(27rem, 27vw); transform: translate(-50%, -50%); text-align: center; opacity: 0; visibility: hidden; }
-/* radii must be <= 50% or the gradient is still opaque at the box edge and the scrim reads
-   as a hard rectangle instead of a soft field */
-.hs-mission::before { content: ""; position: absolute; z-index: -1; inset: -30% -34%; background: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(14 18 11 / 72%) 0%, rgb(14 18 11 / 68%) 46%, rgb(14 18 11 / 42%) 70%, rgb(14 18 11 / 12%) 88%, transparent 100%); }
-.hs-mission p { position: relative; margin: 0; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1.1rem, 1.5vw, 1.65rem); line-height: 1.5; text-shadow: 0 1px 14px rgb(10 10 6 / 60%); }
+.hs-mission { position: absolute; left: 51.5%; top: 45%; width: min(27rem, 27vw); transform: translate(-50%, -50%); text-align: center; }
+.hs-mission p { position: relative; margin: 0; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1.1rem, 1.5vw, 1.65rem); line-height: 1.5; text-shadow: var(--halo-ink-strong); }
 .hs-word { display: inline-block; opacity: 0; visibility: hidden; }
 /* serif interlude riding the sky dissolve: two centered white lines, revealed word by word */
-.hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-shadow: 0 1px 18px rgb(10 10 6 / 55%); text-wrap: unset; }
+.hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-shadow: var(--halo-display); text-wrap: unset; }
 .hs-il { display: block; }
 .hs-il-word { display: inline-block; opacity: 0; visibility: hidden; }
 /* solid cream from 80% down so the hero's last rows exactly match the next section — no seam line */
@@ -156,20 +159,16 @@ html.lenis, html.lenis body { height: auto; }
 .hero-stage-static { height: auto; min-height: 0; }
 .hs-static-panel { position: relative; height: 100svh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); }
 .hs-static-panel img { object-fit: cover; }
-.hs-mission-static { position: absolute; left: 50%; top: 52%; width: min(32rem, 84vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1rem, 1.3vw, 1.4rem); line-height: 1.5; text-shadow: 0 1px 14px rgb(10 10 6 / 60%); }
+.hs-mission-static { position: absolute; left: 50%; top: 52%; width: min(32rem, 84vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1.1rem, 1.5vw, 1.65rem); line-height: 1.5; text-shadow: var(--halo-ink-strong); }
 .hs-interlude-static { top: 22%; }
 .hs-interlude-static span { display: block; }
 /* left-anchored copy block (ref layout): big word + inline connector per line, lede below */
-/* §8.3 permits a localized scrim exactly where the text sits, and §15 makes AA
-   non-negotiable: white on this plate measured 1.85:1 at p90. Confined to the copy's column
-   and masked off at top and bottom, so the temple and the sky above the nav stay untouched. */
-.hero-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(96deg, rgb(20 26 16 / 64%) 0%, rgb(20 26 16 / 58%) 34%, rgb(20 26 16 / 36%) 58%, rgb(20 26 16 / 9%) 76%, transparent 88%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 13%, #000 90%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, #000 13%, #000 90%, transparent 100%); }
 .hero-copy { position: absolute; z-index: var(--z-copy); left: clamp(1.5rem, 4.5vw, 6rem); top: 30%; max-width: min(48rem, 52vw); }
-.split-headline { margin: 0; font-family: var(--font-sans); font-size: clamp(4.6rem, 11.5vw, 14rem); font-weight: 400; line-height: .98; letter-spacing: -.05em; }
+.split-headline { margin: 0; font-family: var(--font-sans); font-size: clamp(4.6rem, 11.5vw, 14rem); font-weight: 400; line-height: .98; letter-spacing: -.05em; text-shadow: var(--halo-display); }
 .hero-line { display: flex; align-items: baseline; gap: .08em; white-space: nowrap; }
 .hero-word { display: inline-block; will-change: transform, clip-path; }
 .hero-connector { display: inline-block; font-size: .34em; font-weight: 400; letter-spacing: -.04em; line-height: 1; }
-.hero-lede { max-width: min(32rem, 38vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1.05rem, 1.4vw, 1.55rem); line-height: 1.45; text-shadow: 0 2px 10px rgb(10 12 8 / 45%); }
+.hero-lede { max-width: min(32rem, 38vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1.05rem, 1.4vw, 1.55rem); line-height: 1.45; text-shadow: var(--halo-ink); }
 .hero-scroll { display: none; position: absolute; z-index: 30; right: var(--gutter); bottom: 2rem; align-items: center; gap: 1rem; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 .hero-scroll i { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--border-inverse); border-radius: 50%; }
 .hero-scroll svg { width: 1.2rem; height: 1.2rem; }
@@ -324,6 +323,9 @@ html.lenis, html.lenis body { height: auto; }
 .primary-cta { display: inline-flex; min-height: 52px; align-items: center; gap: 2rem; margin-top: 3rem; padding: .4rem .45rem .4rem 1.5rem; border: 1px solid currentColor; border-radius: 100px; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; }
 .primary-cta.is-inverse { color: var(--brand-cream); }
 
+.playbook-preview .section-intro h2,
+.service-fit .section-intro h2,
+.capabilities .section-intro h2 { font-size: var(--display-editorial-sm); }
 .playbook-preview .section-intro em { color: var(--brand-sky); }
 .service-offer { margin-bottom: .8rem; font-size: .7rem !important; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
 /* overlaps the hero's bottom edge by 2px: the pinned stage's fractional-pixel edge
@@ -382,10 +384,13 @@ html.lenis, html.lenis body { height: auto; }
 .case-copy a { display: inline-flex; min-height: 44px; align-items: center; gap: .5rem; margin-top: 1rem; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
 .case-copy a span { display: inline-flex; width: 1.3rem; }
 .playbook-preview { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-moss); color: var(--brand-cream); }
+/* number / serif step title / sans line — the same hierarchy as .architecture-line, so six
+   steps fit as a readable index instead of six display-sized headlines */
 .playbook-steps { border-top: 1px solid var(--border-inverse); }
-.playbook-steps article { display: grid; grid-template-columns: 1fr 4fr 4fr; gap: 1.5rem; align-items: start; padding: 3rem 0; border-bottom: 1px solid var(--border-inverse); }
-.playbook-steps h3 { margin: 0; font-family: var(--font-editorial); font-size: clamp(2.5rem, 5vw, 5.5rem); font-weight: 400; line-height: .9; }
-.playbook-steps p { max-width: 32rem; font-size: var(--body-lg); }
+.playbook-steps article { display: grid; grid-template-columns: 1fr 3fr 5fr; gap: 1.5rem; align-items: baseline; padding: 1.9rem 0; border-bottom: 1px solid var(--border-inverse); }
+.playbook-steps article > span { font-size: .7rem; letter-spacing: .14em; }
+.playbook-steps h3 { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.5rem, 2.3vw, 2.4rem); font-weight: 400; line-height: 1.05; letter-spacing: -.02em; }
+.playbook-steps p { max-width: 36rem; margin: 0; font-size: clamp(.95rem, 1.1vw, 1.1rem); line-height: 1.5; }
 .company-preview { display: grid; grid-template-columns: 7fr 5fr; min-height: 90svh; gap: clamp(3rem, 7vw, 8rem); align-items: center; }
 .company-image { position: relative; min-height: 45rem; overflow: hidden; }
 .company-image img { object-fit: cover; }
@@ -724,7 +729,7 @@ html.lenis, html.lenis body { height: auto; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
-  .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il, .hs-il-word, .hs-mission-static { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
+  .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il, .hs-il-word { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
   /* rail degrades to a native horizontal scroller, everything visible */
   .swr-viewport { overflow-x: auto !important; }
   .swr-track, .swr-card { transform: none !important; }
