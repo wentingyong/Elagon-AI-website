@@ -21,6 +21,33 @@ export const HERO_ASSETS = {
   s2Poster: "/hero/hero-s2-poster.webp",
 } as const;
 
+/**
+ * What each layer is actually PAINTED at, which is not its layout box and is why every one of
+ * these used to be a flat "100vw" and every one of them was blurry on a phone.
+ *
+ * Two multipliers hide from `sizes`. (1) The mobile recompose free-places city/temple/trees at
+ * 235.5vw / 201.5vw / 178.4vw (globals.css, max-width: 767px). (2) `object-fit: cover` on a
+ * landscape source inside a portrait stage paints far wider than the box: the 1.758-aspect
+ * scene-1 plates reach ~381vw and the 1.338-aspect scene-2 plates ~290vw at 393x852.
+ * Measured before the fix: a 640px candidate fetched for a box painted at 918 CSS px.
+ *
+ * Desktop stays 100vw — there the cover overshoot is only ~10% and the source width caps the
+ * ladder anyway, so a truer figure would select the same candidate.
+ */
+const mobile = (vw: number) => `(max-width: 767px) ${vw}vw, 100vw`;
+
+export const HERO_SIZES = {
+  s1Sky: mobile(390),
+  s1City: mobile(236),
+  s1Temple: mobile(202),
+  s1Trees: mobile(179),
+  s2Sky: mobile(290),
+  s2Lake: mobile(290),
+  s2Arch: mobile(290),
+  s1Poster: mobile(390),
+  s2Poster: mobile(290),
+} as const;
+
 /** Bayer dissolve band (§5). Canvas is active slightly wider than the threshold
  *  sweep so both edges land on pure single-sky frames and the DOM handoff is seamless. */
 export const DISSOLVE = {

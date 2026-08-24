@@ -35,11 +35,14 @@ const COMPOSITES = [
 ];
 
 /** Single plates that live outside public/hero. Source dir keeps the delivered name; the
- *  shipped URL gets the convention one (the source folder is misspelled `servies`). */
+ *  shipped URL gets the convention one (the source folder is misspelled `servies`).
+ *  `avif: true` also emits an .avif twin: the two where-plates are art-directed through a
+ *  hand-written <picture> and so never touch next/image's optimizer, which is where every other
+ *  image gets its AVIF. At 1200x2304 the portrait plate is 566KB as WebP and 246KB as AVIF. */
 const PLATES = [
-  ["servies/3-A.png", "where/where-frame.webp"],
-  ["servies/3-A-small.png", "where/where-frame-small.webp"], // portrait plate for the small-screen stage
-  ["servies/4-A.png", "cta/cta-frame.webp"], // home final-CTA background (components/Editorial.tsx HomeFinalCTA)
+  ["servies/3-A.png", "where/where-frame.webp", { avif: true }],
+  ["servies/3-A-small.png", "where/where-frame-small.webp", { avif: true }], // portrait plate for the small-screen stage
+  ["servies/4-A.png", "cta/cta-frame.webp"], // home final-CTA background (Editorial.tsx) — goes through next/image
 ];
 
 let total = 0;
@@ -67,12 +70,16 @@ for (const { out, stack } of COMPOSITES) {
   console.log(`${out}  ${(buffer.length / 1024).toFixed(0)}KB`);
 }
 
-for (const [src, out] of PLATES) {
-  const buffer = await sharp(path.join(PUBLIC_DIR, src)).webp({ quality: QUALITY }).toBuffer();
+for (const [src, out, opts = {}] of PLATES) {
   await mkdir(path.dirname(path.join(PUBLIC_DIR, out)), { recursive: true });
-  await writeFile(path.join(PUBLIC_DIR, out), buffer);
-  total += buffer.length;
-  console.log(`${out}  ${(buffer.length / 1024).toFixed(0)}KB`);
+  const emit = async (name, buffer) => {
+    await writeFile(path.join(PUBLIC_DIR, name), buffer);
+    total += buffer.length;
+    const { width, height } = await sharp(buffer).metadata();
+    console.log(`${name}  ${(buffer.length / 1024).toFixed(0)}KB  ${width}x${height}`);
+  };
+  await emit(out, await sharp(path.join(PUBLIC_DIR, src)).webp({ quality: QUALITY, effort: 6, alphaQuality: 100 }).toBuffer());
+  if (opts.avif) await emit(out.replace(/\.webp$/, ".avif"), await sharp(path.join(PUBLIC_DIR, src)).avif({ quality: 58, effort: 5 }).toBuffer());
 }
 
 console.log(`total ${(total / 1024 / 1024).toFixed(2)}MB`);

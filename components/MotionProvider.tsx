@@ -18,6 +18,13 @@ export function MotionProvider({ children }: { children: React.ReactNode }) {
       const ScrollTrigger = triggerModule.ScrollTrigger;
       const Lenis = lenisModule.default;
       gsap.registerPlugin(ScrollTrigger);
+      // iOS fires `resize` every time the toolbar collapses, which was fully refreshing all
+      // three pinned triggers mid-scroll — the hero's lag. Safe only because every stage is
+      // now sized in lvh (lib/viewport.ts), so a toolbar move changes no measurement.
+      ScrollTrigger.config({ ignoreMobileResize: true });
+      // one refresh once the editorial serif is in: every pin is measured against text metrics,
+      // and the rail's own copy of this only ran in its >=768px branch, so phones never got it
+      void document.fonts?.ready.then(() => ScrollTrigger.refresh());
       const lenis = new Lenis({ anchors: true });
       lenis.on("scroll", ScrollTrigger.update);
       const raf = (time: number) => lenis.raf(time * 1000);
