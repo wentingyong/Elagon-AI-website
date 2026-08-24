@@ -45,6 +45,9 @@
      without laying a block of shadow over the plate */
   /* display sizes take the halo in em so it scales with the type instead of clotting */
   --halo-display: 0 0 .012em rgb(10 12 8 / 88%), 0 .006em .018em rgb(10 12 8 / 78%), 0 0 .05em rgb(10 12 8 / 60%), 0 0 .11em rgb(10 12 8 / 38%);
+  /* the mission's own shadow, per Figma: 0/4/20 in brand green, doubled so a single pass at
+     100% does not leave the counters bright against the plate */
+  --halo-mission: 0 4px 20px rgb(89 107 74 / 100%), 0 2px 9px rgb(89 107 74 / 92%), 0 0 34px rgb(89 107 74 / 68%);
   --halo-ink: 0 0 3px rgb(10 12 8 / 92%), 0 1px 4px rgb(10 12 8 / 82%), 0 0 9px rgb(10 12 8 / 70%), 0 0 20px rgb(10 12 8 / 46%);
   --halo-ink-strong: 0 0 3px rgb(10 12 8 / 95%), 0 1px 4px rgb(10 12 8 / 90%), 0 0 9px rgb(10 12 8 / 80%), 0 0 18px rgb(10 12 8 / 60%), 0 0 34px rgb(10 12 8 / 38%);
 }
@@ -139,9 +142,15 @@ html.lenis, html.lenis body { height: auto; }
 /* S2 + finale elements stay hidden until the scroll script reveals them (also the no-JS first paint) */
 .hs-s2 { opacity: 0; visibility: hidden; }
 .hs-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, transparent 36%, rgb(18 16 10 / 45%) 72%, rgb(18 16 10 / 78%) 100%); }
-/* width capped to the central arch opening (~0.38–0.655 of 2-C) so no word drapes onto the columns */
-.hs-mission { position: absolute; left: 51.5%; top: 45%; width: min(27rem, 27vw); transform: translate(-50%, -50%); text-align: center; }
-.hs-mission p { position: relative; margin: 0; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1.1rem, 1.5vw, 1.65rem); line-height: 1.5; text-shadow: var(--halo-ink-strong); }
+/* the arch opening is 0.38–0.655 of 2-C, i.e. 547–943px on a 1440x810 stage; the column is
+   held inside that with ~18px of air each side so no word touches a shaft */
+.hs-mission { position: absolute; left: 51.7%; top: 45%; width: min(27rem, 25vw); transform: translate(-50%, -50%); text-align: center; }
+/* the second half of the Figma spec: a background blur, not a scrim. It adds no darkness — it
+   just defocuses the halftone behind the copy so the bold white reads. Radially masked so it
+   has no edge of its own, and dropped with the rest of the effects on slow frames. */
+.hs-mission::before { content: ""; position: absolute; z-index: -1; inset: -16% -12%; -webkit-backdrop-filter: blur(7px); backdrop-filter: blur(7px); -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 46%, transparent 100%); mask-image: radial-gradient(ellipse 50% 50% at 50% 50%, #000 46%, transparent 100%); }
+.hs-lite .hs-mission::before { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.hs-mission p { position: relative; margin: 0; color: #fff; font-family: var(--font-sans); font-size: clamp(1.35rem, 2.22vw, 2.5rem); font-weight: 700; line-height: 1.2; letter-spacing: -.011em; text-shadow: var(--halo-mission); }
 .hs-word { display: inline-block; opacity: 0; visibility: hidden; }
 /* serif interlude riding the sky dissolve: two centered white lines, revealed word by word */
 .hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-shadow: var(--halo-display); text-wrap: unset; }
@@ -159,7 +168,7 @@ html.lenis, html.lenis body { height: auto; }
 .hero-stage-static { height: auto; min-height: 0; }
 .hs-static-panel { position: relative; height: 100svh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); }
 .hs-static-panel img { object-fit: cover; }
-.hs-mission-static { position: absolute; left: 50%; top: 52%; width: min(32rem, 84vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1.1rem, 1.5vw, 1.65rem); line-height: 1.5; text-shadow: var(--halo-ink-strong); }
+.hs-mission-static { position: absolute; left: 50%; top: 52%; width: min(32rem, 84vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: #fff; font-family: var(--font-sans); font-size: clamp(1.35rem, 2.22vw, 2.5rem); font-weight: 700; line-height: 1.2; letter-spacing: -.011em; text-shadow: var(--halo-mission); }
 .hs-interlude-static { top: 22%; }
 .hs-interlude-static span { display: block; }
 /* left-anchored copy block (ref layout): big word + inline connector per line, lede below */
