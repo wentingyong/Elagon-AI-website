@@ -282,7 +282,7 @@ export function HeroScroll() {
           <div className="hs-inner" data-hsp="s1-d"><Image src={HERO_ASSETS.s1Trees} alt="" fill loading="eager" sizes="100vw" /></div>
         </div>
         <div className="hs-layer hs-s2 hs-move" data-hs="s2-c">
-          <div className="hs-inner"><Image src={HERO_ASSETS.s2Arch} alt="" fill sizes="100vw" /></div>
+          <div className="hs-inner"><Image src={HERO_ASSETS.s2Arch} alt="" fill sizes="100vw" quality={90} /></div>
         </div>
         <div className="hs-vignette hs-s2" aria-hidden="true" />
       </div>

@@ -153,11 +153,13 @@ html.lenis, html.lenis body { height: auto; }
 /* S2 + finale elements stay hidden until the scroll script reveals them (also the no-JS first paint) */
 .hs-s2 { opacity: 0; visibility: hidden; }
 .hs-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, transparent 36%, rgb(18 16 10 / 45%) 72%, rgb(18 16 10 / 78%) 100%); }
-/* the arch opening in 2-C runs 0.316–0.684 — symmetric, and full width from 0.35 down, so
-   530px on a 1440x810 stage (the layer is cover-fit; at ratios >= 1.34 one image-% is one vw).
-   The column holds inside that with ~38px of air each side so no word touches a shaft. */
-.hs-mission { position: absolute; left: 50%; top: 46.5%; width: min(34rem, 31.5vw); transform: translate(-50%, -50%); text-align: center; }
-.hs-mission p { position: relative; margin: 0; color: #fff; font-family: var(--font-sans); font-size: clamp(1.1rem, 1.85vw, 2.05rem); font-weight: 700; line-height: 1.24; letter-spacing: -.011em; text-shadow: var(--halo-green); }
+/* The arch opening in 2-C runs 0.316–0.684 of the plate — symmetric, and at full width from
+   0.35 down. The layer is cover-fit, so the opening measures 0.368 * max(100vw, 1.338 * 100svh):
+   vw-driven on wide screens, svh-driven in portrait, where the plate is taller than the stage.
+   Width and type both derive from --arch so the block reads identically at any aspect ratio;
+   0.856 of the opening leaves ~38px of air each side at 1440 so no word touches a shaft. */
+.hs-mission { --arch: max(36.8vw, 49.2svh); position: absolute; left: 50%; top: 47.5%; width: min(34rem, calc(var(--arch) * .856)); transform: translate(-50%, -50%); text-align: center; }
+.hs-mission p { position: relative; margin: 0; color: #fff; font-family: var(--font-sans); font-size: clamp(1.1rem, calc(var(--arch) * .0503), 2.05rem); font-weight: 700; line-height: 1.24; letter-spacing: -.011em; text-shadow: var(--halo-green); }
 .hs-word { display: inline-block; opacity: 0; visibility: hidden; }
 /* serif interlude riding the sky dissolve: two centered white lines, revealed word by word */
 .hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-shadow: var(--halo-green); text-wrap: unset; }
@@ -175,7 +177,7 @@ html.lenis, html.lenis body { height: auto; }
 .hero-stage-static { height: auto; min-height: 0; }
 .hs-static-panel { position: relative; height: 100svh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); }
 .hs-static-panel img { object-fit: cover; }
-.hs-mission-static { position: absolute; left: 50%; top: 52%; width: min(34rem, 84vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: #fff; font-family: var(--font-sans); font-size: clamp(1.1rem, 1.85vw, 2.05rem); font-weight: 700; line-height: 1.24; letter-spacing: -.011em; text-shadow: var(--halo-green); }
+.hs-mission-static { --arch: max(36.8vw, 49.2svh); position: absolute; left: 50%; top: 52%; width: min(34rem, 84vw, calc(var(--arch) * .856)); margin: 0; transform: translate(-50%, -50%); text-align: center; color: #fff; font-family: var(--font-sans); font-size: clamp(1.1rem, calc(var(--arch) * .0503), 2.05rem); font-weight: 700; line-height: 1.24; letter-spacing: -.011em; text-shadow: var(--halo-green); }
 .hs-interlude-static { top: 22%; }
 .hs-interlude-static span { display: block; }
 /* left-anchored copy block (ref layout): big word + inline connector per line, lede below */
