@@ -4,8 +4,10 @@
  * plus the single "where we work" frame plate (components/where/whereSequence.ts).
  *
  *   node scripts/build-hero-assets.mjs
+ *
+ * Also clears the next/image derived caches on the way out; see the note at the bottom.
  */
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
@@ -121,3 +123,13 @@ for (const [src, out, opts = {}] of PLATES) {
 }
 
 console.log(`total ${(total / 1024 / 1024).toFixed(2)}MB`);
+
+/** next/image keys its derived files by URL + width + quality, not by source content, so a running
+ *  dev server happily keeps serving the previous encode of a path we just rewrote. That is not a
+ *  cosmetic staleness: re-exporting 1-A with the moon removed left the old moon-bearing sky in the
+ *  cache, and the page rendered two moons — the stale baked-in one under the new 1-A-1 layer.
+ *  These are derived files; Next regenerates them on the next request. */
+for (const dir of [".next/dev/cache/images", ".next/cache/images"]) {
+  await rm(path.resolve(import.meta.dirname, "..", dir), { recursive: true, force: true });
+}
+console.log("cleared next/image caches — reload the dev server page to pick the new encodes up");

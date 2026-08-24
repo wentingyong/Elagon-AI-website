@@ -274,7 +274,11 @@ html.lenis, html.lenis body { height: auto; }
    short card the detail pushes down the block instead of sliding underneath a fixed marker */
 .wf-num { margin-bottom: auto; font-size: max(.62rem, calc(var(--wb-t) * .05)); letter-spacing: .18em; }
 .wf-box h3 { margin: 0; font-family: var(--font-editorial); font-size: max(1.1rem, calc(var(--wb-t) * .108)); font-weight: 400; line-height: 1; letter-spacing: -.03em; text-wrap: unset; }
-.wf-back p { margin: 0; font-size: max(.75rem, calc(var(--wb-t) * .056)); line-height: 1.35; }
+.wf-back p { margin: 0; font-size: max(.75rem, calc(var(--wb-t) * .056)); line-height: 1.32; }
+/* the detail and the title are two different voices, so the back face opens the space between
+   them well past the flex gap. There is slack to spend: the number's auto margin was holding
+   45-82px of empty above the detail on every size but the very smallest phone. */
+.wf-back h3 { margin-top: calc(var(--wb-t) * .055); }
 /* closing beat: keeps the section's left rail rather than centring, so the eyebrow, headline,
    staircase and statement all sit on one axis */
 .wf-close { position: absolute; left: var(--wf-rail); top: 32%; width: 40%; max-width: 38rem; }
@@ -305,7 +309,7 @@ html.lenis, html.lenis body { height: auto; }
    the portrait cut instead of a staircase squeezed into a quarter of it — see WHERE_QUERY_SMALL. */
 @media (max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: no-preference),
        (min-width: 768px) and (max-width: 1023px) and (max-aspect-ratio: 5 / 8) and (prefers-reduced-motion: no-preference) {
-  .wf-stage { --wf-ratio: .52083; --wf-rail: 6%; --wb: 58vw; --wb-h: 28lvh; --wb-step: 0; --wf-minh: 34rem; }
+  .wf-stage { --wf-ratio: .52083; --wf-rail: 6%; --wb: 58vw; --wb-h: 30lvh; --wb-step: 0; --wf-minh: 34rem; }
   .wf-eyebrow { left: 8%; top: 5%; }
   /* sits low on purpose: higher up the canopy's fringe reaches in to plate x .20 and eats the
      first characters of every line. Left is the page gutter, not a percentage — 3% was 11px on
@@ -322,9 +326,9 @@ html.lenis, html.lenis body { height: auto; }
      14% as block 3 lands, so these tops are 14% lower than where the blocks finally sit. That
      puts block 1 flush with the stage top and block 3 fully on screen — which matters more now
      that the title lives on the back face, where a cropped block would cut it off. */
-  [data-wb="1"] { left: 6%; top: 19%; }
-  [data-wb="2"] { left: 18%; top: 49%; }
-  [data-wb="3"] { left: 6%; top: 79%; }
+  [data-wb="1"] { left: 6%; top: 16%; }
+  [data-wb="2"] { left: 18%; top: 48%; }
+  [data-wb="3"] { left: 6%; top: 80%; }
   /* blocks in FRONT of the plate here, unlike the wide branch. The plate is the section's
      foreground by design, but at this size the blocks fill most of the stage and the canopy
      was falling across block 1's detail — readability wins over the overlap on a phone. */

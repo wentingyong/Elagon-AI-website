@@ -136,13 +136,14 @@ export const heroScript: HeroStep[] = [
 ];
 
 /** Mouse parallax amplitudes during the idle stage, in percent (§4 row 1).
- *  `lag` overrides the shared 0.7s follow. The moon is the only layer that takes it: strict depth
- *  would put it behind the sky and it would read as wallpaper, while giving it a near-field
- *  amplitude would read as a sticker. A middling amplitude on a long follow instead lands it half
- *  a beat after everything else — a heavy body drifting, which is what it is. */
+ *  `lag` overrides the shared 0.7s follow. The moon is the only layer that takes it, and it breaks
+ *  the depth ordering on purpose: read as pure parallax it belongs behind the sky at 0.5 and is
+ *  invisible there. The long follow is what keeps a near-field amplitude from reading as a sticker
+ *  — it is still travelling after the temple and trees have stopped, which is a heavy body
+ *  drifting rather than a plane sliding. Amplitude is the knob to turn if it wants more. */
 export const IDLE_PARALLAX: ReadonlyArray<{ target: string; amp: number; lag?: number }> = [
   { target: "s1-a", amp: 0.5 },
-  { target: "s1-a1", amp: 0.9, lag: 1.2 },
+  { target: "s1-a1", amp: 2.6, lag: 1.2 },
   { target: "s1-b", amp: 1 },
   { target: "s1-c", amp: 2 },
   { target: "s1-d", amp: 3 },
