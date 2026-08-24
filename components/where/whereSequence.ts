@@ -11,16 +11,20 @@
 export const WHERE_TRAVEL_VH = 300; // the flip chain needs room to read: ~20vh of scroll per 180° turn
 
 /** Two pinned branches running the SAME script over a different plate. The split is purely
- *  ASPECT, matched to the plates' own shapes — never width. The portrait cut is 0.52:1, so it
- *  only suits a viewport near that shape (a phone held upright); anything squarer, tablet
- *  portrait included, crops a third of its height away and loses both the canopy and the
- *  pedestals. 3/5 = 0.6 is the crossover. Only reduced motion falls through to the static
+ *  WIDTH + ORIENTATION. The portrait cut is 0.52:1, so it only suits a phone held upright;
+ *  anything squarer, tablet portrait included, crops a third of its height away and loses both
+ *  the canopy and the pedestals. That used to be gated on aspect ratio (3/5), which iOS Safari
+ *  CHANGES as the toolbar collapses — on a 375x553/375x667 iPhone the stage swapped plates
+ *  mid-scroll and rebuilt the whole timeline. Width and orientation are the two things the
+ *  toolbar cannot move, and they land on the same devices: phone-portrait small, phone-landscape
+ *  and tablet-portrait wide. The wide query repeats the motion clause per branch rather than
+ *  using `or`, which predates Safari 16.4. Only reduced motion falls through to the static
  *  stacked flow; touch is not excluded, since the flip chain is scrubbed and needs no pointer.
  *  Both queries must stay exactly complementary to the @media blocks in globals.css. */
 export const WHERE_QUERY =
-  "(min-aspect-ratio: 3 / 5) and (prefers-reduced-motion: no-preference)";
+  "(min-width: 768px) and (prefers-reduced-motion: no-preference), (orientation: landscape) and (prefers-reduced-motion: no-preference)";
 export const WHERE_QUERY_SMALL =
-  "(max-aspect-ratio: 3 / 5) and (prefers-reduced-motion: no-preference)";
+  "(max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: no-preference)";
 
 /**
  * Plate geometry, one entry per branch. Both plates are opaque along the top and open at the
@@ -35,8 +39,8 @@ export const WHERE_QUERY_SMALL =
  * CAUTION: each `ratio`/`base` must stay in lockstep with --wf-ratio/--wf-base in globals.css.
  */
 export const PLATE = {
-  wide: { src: "/where/where-frame.webp", ratio: 1432 / 962, base: 1.06, dolly: 1.12, w: 1432, h: 962 },
-  small: { src: "/where/where-frame-small.webp", ratio: 451 / 866, base: 1.06, dolly: 1.18, w: 451, h: 866 },
+  wide: { src: "/where/where-frame.webp", avif: "/where/where-frame.avif", ratio: 1432 / 962, base: 1.06, dolly: 1.12, w: 1432, h: 962 },
+  small: { src: "/where/where-frame-small.webp", avif: "/where/where-frame-small.avif", ratio: 1200 / 2304, base: 1.06, dolly: 1.18, w: 1200, h: 2304 },
 } as const;
 export type Plate = (typeof PLATE)[keyof typeof PLATE];
 

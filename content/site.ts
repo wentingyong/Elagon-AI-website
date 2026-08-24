@@ -7,6 +7,15 @@ export const navigation = [
   { label: "Company", href: "/company" },
 ] as const;
 
+/** Footer contact rail. `value` is the visible text, so the handle reads as itself rather than
+ *  as an icon — no aria-label needed. Also the source for the Organization sameAs in app/layout. */
+export const socialLinks = [
+  { label: "Web", value: "elagon.ai", href: "https://elagon.ai" },
+  { label: "Instagram", value: "@elagon.ai", href: "https://instagram.com/elagon.ai" },
+  { label: "LinkedIn", value: "/company/elagonai", href: "https://linkedin.com/company/elagonai" },
+  { label: "Email", value: "hello@elagon.ai", href: "mailto:hello@elagon.ai" },
+] as const;
+
 export const heroHeadline: SplitHeadlineData = {
   primaryTop: "AI",
   connectorTop: "that works.",

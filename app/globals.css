@@ -119,14 +119,27 @@ html.lenis, html.lenis body { height: auto; }
 .contact-pill:hover span, .primary-cta:hover span { transform: rotate(-35deg); }
 .menu-toggle { display: none; width: 44px; height: 44px; border: 0; background: transparent; color: currentColor; }
 .menu-toggle span { display: block; width: 24px; height: 1px; margin: 6px auto; background: currentColor; transition: transform var(--duration-base), opacity var(--duration-base); }
-.mobile-menu { visibility: hidden; position: fixed; z-index: var(--z-menu); inset: 0; transform: translateY(-100%); background: var(--brand-rust); color: var(--brand-cream); transition: transform .6s var(--ease-editorial), visibility .6s; }
-.mobile-menu.is-open { visibility: visible; transform: translateY(0); }
+/* green-deep, per design system §10 ("an opaque green-deep or cream surface"). Portalled to
+   <body> by SiteHeader, so --z-menu finally ranks against the page and not just inside the hero. */
+.mobile-menu { visibility: hidden; position: fixed; z-index: var(--z-menu); inset: 0; transform: translateY(-100%); background: var(--surface-inverse); color: var(--text-on-image); transition: transform .6s var(--ease-editorial), visibility 0s linear .6s; }
+/* visibility is stepped, not eased: while it TRANSITIONS it still computes `hidden` at progress
+   0, so a transitioned visibility left the panel unfocusable for the first frame after .is-open
+   landed. Instant on the way in (focus can land immediately), delayed .6s on the way out so the
+   slide-off stays on screen. */
+.mobile-menu.is-open { visibility: visible; transform: translateY(0); transition: transform .6s var(--ease-editorial), visibility 0s; }
+/* the panel covers the hamburger once open, so it carries its own close control */
+.menu-close { position: absolute; top: .75rem; right: clamp(1.25rem, 3vw, 3.5rem); display: grid; width: 44px; height: 44px; place-items: center; border: 0; background: transparent; color: currentColor; }
+.menu-close span { position: absolute; width: 22px; height: 1px; background: currentColor; }
+.menu-close span:first-child { transform: rotate(45deg); }
+.menu-close span:last-child { transform: rotate(-45deg); }
 
 /* ——— Hero scroll transition (doc/Hero_Scroll_Transition_Implementation_Plan.md) ——— */
-.hero-stage { position: relative; height: 100svh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); color: var(--text-on-image); isolation: isolate; }
+.hero-stage { position: relative; height: 100lvh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); color: var(--text-on-image); isolation: isolate; }
 .hs-scene { position: absolute; inset: 0; }
 .hs-layer { position: absolute; inset: 0; }
-.hs-move { will-change: transform; }
+/* promoted only while the pin is live — seven full-bleed layers held on the GPU for the whole
+   page was real memory pressure on a phone. Mirrors .wf-stage.is-live .wf-move. */
+.hero-stage.is-live .hs-move { will-change: transform; }
 .hs-inner { position: absolute; inset: 0; }
 .hs-layer img { object-fit: cover; object-position: center; }
 /* zero-bleed mitigation: base scales give the mouse parallax travel headroom */
@@ -154,11 +167,11 @@ html.lenis, html.lenis body { height: auto; }
 .hs-s2 { opacity: 0; visibility: hidden; }
 .hs-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, transparent 36%, rgb(18 16 10 / 45%) 72%, rgb(18 16 10 / 78%) 100%); }
 /* The arch opening in 2-C runs 0.316–0.684 of the plate — symmetric, and at full width from
-   0.35 down. The layer is cover-fit, so the opening measures 0.368 * max(100vw, 1.338 * 100svh):
+   0.35 down. The layer is cover-fit, so the opening measures 0.368 * max(100vw, 1.338 * 100lvh):
    vw-driven on wide screens, svh-driven in portrait, where the plate is taller than the stage.
    Width and type both derive from --arch so the block reads identically at any aspect ratio;
    0.856 of the opening leaves ~38px of air each side at 1440 so no word touches a shaft. */
-.hs-mission { --arch: max(36.8vw, 49.2svh); position: absolute; left: 50%; top: 47.5%; width: min(34rem, calc(var(--arch) * .856)); transform: translate(-50%, -50%); text-align: center; }
+.hs-mission { --arch: max(36.8vw, 49.2lvh); position: absolute; left: 50%; top: 47.5%; width: min(34rem, calc(var(--arch) * .856)); transform: translate(-50%, -50%); text-align: center; }
 .hs-mission p { position: relative; margin: 0; color: #fff; font-family: var(--font-sans); font-size: clamp(1.1rem, calc(var(--arch) * .0503), 2.05rem); font-weight: 700; line-height: 1.24; letter-spacing: -.011em; text-shadow: var(--halo-green); }
 .hs-word { display: inline-block; opacity: 0; visibility: hidden; }
 /* serif interlude riding the sky dissolve: two centered white lines, revealed word by word */
@@ -166,7 +179,7 @@ html.lenis, html.lenis body { height: auto; }
 .hs-il { display: block; }
 .hs-il-word { display: inline-block; opacity: 0; visibility: hidden; }
 /* solid cream from 80% down so the hero's last rows exactly match the next section — no seam line */
-.hs-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 26vh; pointer-events: none; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 60%, transparent) 45%, var(--brand-cream) 80%); }
+.hs-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 26%; pointer-events: none; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 60%, transparent) 45%, var(--brand-cream) 80%); }
 .hs-nav-blur { position: absolute; top: 0; right: 0; left: 0; height: 6.25rem; pointer-events: none; }
 .hs-nav-blur i { position: absolute; inset: 0; }
 .hs-nav-blur i:first-child { backdrop-filter: blur(3px); mask-image: linear-gradient(to bottom, #000 30%, transparent 85%); }
@@ -175,9 +188,9 @@ html.lenis, html.lenis body { height: auto; }
 .hs-debug .hs-layer, .hs-debug .hs-canvas { outline: 1px dashed rgb(255 80 80 / 80%); outline-offset: -1px; }
 /* reduced-motion fallback: static composites, text shown directly */
 .hero-stage-static { height: auto; min-height: 0; }
-.hs-static-panel { position: relative; height: 100svh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); }
+.hs-static-panel { position: relative; height: 100lvh; min-height: 37.5rem; overflow: hidden; background: var(--surface-deep); }
 .hs-static-panel img { object-fit: cover; }
-.hs-mission-static { --arch: max(36.8vw, 49.2svh); position: absolute; left: 50%; top: 52%; width: min(34rem, 84vw, calc(var(--arch) * .856)); margin: 0; transform: translate(-50%, -50%); text-align: center; color: #fff; font-family: var(--font-sans); font-size: clamp(1.1rem, calc(var(--arch) * .0503), 2.05rem); font-weight: 700; line-height: 1.24; letter-spacing: -.011em; text-shadow: var(--halo-green); }
+.hs-mission-static { --arch: max(36.8vw, 49.2lvh); position: absolute; left: 50%; top: 52%; width: min(34rem, 84vw, calc(var(--arch) * .856)); margin: 0; transform: translate(-50%, -50%); text-align: center; color: #fff; font-family: var(--font-sans); font-size: clamp(1.1rem, calc(var(--arch) * .0503), 2.05rem); font-weight: 700; line-height: 1.24; letter-spacing: -.011em; text-shadow: var(--halo-green); }
 .hs-interlude-static { top: 22%; }
 .hs-interlude-static span { display: block; }
 /* left-anchored copy block (ref layout): big word + inline connector per line, lede below */
@@ -195,7 +208,7 @@ html.lenis, html.lenis body { height: auto; }
 /* ——— Where we work: pinned frame stage (components/where/whereSequence.ts) ——— */
 /* overlaps the rail's pinned stage by 2px — same fractional-pixel hairline fix as .selected-work */
 .where-work { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-cream); }
-.wf-stage { --wf-ratio: 1.48857; --wf-base: 1.06; --wf-minh: 40rem; --wf-rail: 22%; --wb: min(32svh, 22vw); --wb-step: calc(var(--wb) * 1.025); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100svh; min-height: var(--wf-minh); overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; }
+.wf-stage { --wf-ratio: 1.48857; --wf-base: 1.06; --wf-minh: 40rem; --wf-rail: 22%; --wb: min(32lvh, 22vw); --wb-step: calc(var(--wb) * 1.025); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100lvh; min-height: var(--wf-minh); overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; }
 .wf-plane { position: absolute; inset: 0; }
 /* will-change only while the stage is pinned — this is the page's third pinned stage (§8 risk 5) */
 .wf-stage.is-live .wf-move { will-change: transform; }
@@ -215,14 +228,14 @@ html.lenis, html.lenis body { height: auto; }
    box lives inside it and is centred with `translate` so nothing writes transform twice.
    width = cover × --wf-base: the pre-scale buys the vertical headroom the tilt spends, and the
    plate is opaque along the top and OPEN at the bottom. --wf-ratio is the plate's own W/H, so
-   this one rule covers both cuts; the height term is max(100svh, --wf-minh) because min-height
+   this one rule covers both cuts; the height term is max(100lvh, --wf-minh) because min-height
    can push the stage past the viewport on short screens and the cover has to follow. */
 /* CAUTION: GSAP must never transform .wf-frame-inner. The moment it does, it folds this
    `translate` into its own matrix and writes `translate: none` inline — and any later
    clearProps/revert then leaves the plate's corner pinned to the stage centre. The parallax
    therefore rides .wf-frame-shift, a plain stage-sized plane, and this box is layout-only. */
 .wf-frame-shift { position: absolute; inset: 0; }
-.wf-frame-inner { position: absolute; left: 50%; top: 50%; width: calc(max(100%, calc(var(--wf-ratio) * max(100svh, var(--wf-minh)))) * var(--wf-base)); translate: -50% -50%; }
+.wf-frame-inner { position: absolute; left: 50%; top: 50%; width: calc(max(100%, calc(var(--wf-ratio) * max(100lvh, var(--wf-minh)))) * var(--wf-base)); translate: -50% -50%; }
 .wf-frame-inner img { display: block; width: 100%; height: auto; }
 /* the eyebrow sits on the canopy, whose p90 luminance is ~141 → cream reads 2.5:1 unscrimmed.
    a localized wash lands the worst pixel at ~8:1 (design system §8.3) */
@@ -261,7 +274,7 @@ html.lenis, html.lenis body { height: auto; }
 .wf-close .primary-cta { margin-top: clamp(1.8rem, 3vw, 3rem); }
 /* short cream fade: hides the pin's fractional-pixel bottom edge and settles the plate's
    foliage into the ground plane behind the closing statement */
-.wf-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 12vh; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 55%, transparent) 62%, var(--brand-cream) 96%); }
+.wf-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 12%; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 55%, transparent) 62%, var(--brand-cream) 96%); }
 .wf-debug .wf-plane, .wf-debug .wf-frame-shift, .wf-debug .wf-frame-inner { outline: 1px dashed rgb(255 80 80 / 80%); outline-offset: -1px; }
 
 /* scene-2 elements start hidden in BOTH pinned branches (and on a no-JS first paint),
@@ -278,13 +291,15 @@ html.lenis, html.lenis body { height: auto; }
 /* ——— the small-screen stage: portrait plate, same script, same beats. The opening is a tall
    slot left of the columns, so the staircase becomes a vertical cascade with an alternating
    indent rather than a diagonal. Copy and blocks sit in the band the alpha scan proves clear
-   (plate x .09–.66 across y .37–.62). Gated on aspect alone — see WHERE_QUERY_SMALL. */
-@media (max-aspect-ratio: 3 / 5) and (prefers-reduced-motion: no-preference) {
-  .wf-stage { --wf-ratio: .52079; --wf-rail: 6%; --wb: min(52vw, 30svh); --wb-step: 0; --wf-pad: clamp(.9rem, 3.6vw, 1.4rem); --wf-minh: 34rem; }
+   (plate x .09–.66 across y .37–.62). Gated on width + orientation, the two things the iOS
+   toolbar cannot change mid-scroll — see WHERE_QUERY_SMALL. */
+@media (max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: no-preference) {
+  .wf-stage { --wf-ratio: .52083; --wf-rail: 6%; --wb: min(52vw, 30lvh); --wb-step: 0; --wf-pad: clamp(.9rem, 3.6vw, 1.4rem); --wf-minh: 34rem; }
   .wf-eyebrow { left: 8%; top: 5%; }
   /* sits low on purpose: higher up the canopy's fringe reaches in to plate x .20 and eats the
-     first characters of every line */
-  .wf-copy { left: 3%; top: 36%; width: 64%; max-width: none; }
+     first characters of every line. Left is the page gutter, not a percentage — 3% was 11px on
+     a 375px screen, inside the 16px gutter, which is what made the headline look clipped. */
+  .wf-copy { left: var(--gutter); top: 36%; width: calc(72% - var(--gutter)); max-width: none; }
   .wf-copy h2 { margin-bottom: 1rem; font-size: clamp(1.5rem, 6.6vw, 2.3rem); line-height: 1; }
   .wf-lede { max-width: none; font-size: clamp(.9rem, 3.6vw, 1.05rem); }
   /* vertical cascade: block 2 indents to echo the desktop checkerboard without needing width */
@@ -298,7 +313,7 @@ html.lenis, html.lenis body { height: auto; }
   .wf-close { left: 5%; top: 34%; width: 66%; max-width: none; }
   .wf-close p { font-size: clamp(1.3rem, 5.6vw, 2rem); }
   .wf-close .primary-cta { margin-top: 1.8rem; }
-  .wf-handoff { height: 10vh; }
+  .wf-handoff { height: 10%; }
 }
 
 /* reduced motion: no pin registers on either branch, so CSS unwinds the stage into normal
@@ -362,7 +377,7 @@ html.lenis, html.lenis body { height: auto; }
 .swr-intro { padding: clamp(4rem, 11vh, 8rem) var(--gutter) clamp(3rem, 7vh, 5rem); }
 .swr-intro .section-intro { margin: 0; }
 /* the pinned stage: cards own the whole viewport, like the reference */
-.swr-stage { display: flex; height: 100svh; min-height: 34rem; flex-direction: column; justify-content: center; overflow: hidden; padding: clamp(1.5rem, 3vh, 2.5rem) 0; }
+.swr-stage { display: flex; height: 100lvh; min-height: 34rem; flex-direction: column; justify-content: center; overflow: hidden; padding: clamp(1.5rem, 3vh, 2.5rem) 0; }
 .swr-cta { display: flex; flex: none; align-self: center; align-items: center; padding-right: var(--gutter); }
 .swr-viewport { min-height: 0; flex: 1; overflow: hidden; }
 .swr-track { display: flex; height: 100%; width: max-content; align-items: center; gap: clamp(1.5rem, 2.5vw, 2.5rem); padding: 0 clamp(3rem, 8vw, 8rem) 0 var(--gutter); }
@@ -448,11 +463,21 @@ html.lenis, html.lenis body { height: auto; }
 .cta-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 2rem; }
 .cta-actions .primary-cta { margin-top: 0; }
 
-/* green-deep, per the palette's own note for the footer surface (design system 5.1). It also
-   steps down from the rust .final-cta above it, which the rust footer used to run straight into. */
-.site-footer { display: grid; grid-template-columns: 5fr 3fr 2fr; gap: 3rem; padding: 5rem var(--gutter) 2rem; background: var(--surface-inverse); color: var(--brand-cream); }
+/* brand green — the primary. Ink is --text-on-image rather than --brand-cream: cream on moss is
+   4.48:1, which the .9rem body and .7rem bottom bar need to clear, and #F7F5EF makes it 5.31:1
+   without shifting the green. It also steps down from the rust .final-cta above it, which the
+   old rust footer used to run straight into. */
+.site-footer { display: grid; grid-template-columns: 4fr 3fr 3fr 2fr; gap: 3rem; padding: 5rem var(--gutter) 2rem; background: var(--brand-moss); color: var(--text-on-image); }
 .site-footer > p { font-size: .9rem; }
 .site-footer nav { display: grid; align-content: start; gap: .5rem; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
+/* contact rail: label above value, same uppercase key as the nav so the two columns rhyme */
+.footer-social { display: grid; align-content: start; gap: 1rem; margin: 0; }
+/* no opacity dimming here: at .68rem a 72% wash measures 3.63:1 on moss. Size, tracking and
+   caps carry the hierarchy instead, and the label keeps the full 5.31:1. */
+.footer-social dt { font-size: .68rem; letter-spacing: .1em; text-transform: uppercase; }
+.footer-social dd { margin: .15rem 0 0; font-size: .9rem; }
+.footer-social a { display: inline-block; min-height: 1.5rem; border-bottom: 1px solid transparent; transition: border-color var(--duration-base) var(--ease-enter); }
+.footer-social a:hover, .footer-social a:focus-visible { border-bottom-color: currentColor; }
 .footer-bottom { grid-column: 1 / -1; display: flex; justify-content: space-between; margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-inverse); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
 
 .page-hero { display: grid; min-height: calc(100svh - 6rem); grid-template-columns: repeat(12, 1fr); align-content: end; gap: 1.5rem; padding: clamp(6rem, 14vw, 12rem) var(--gutter) clamp(5rem, 10vw, 9rem); }
@@ -680,7 +705,9 @@ html.lenis, html.lenis body { height: auto; }
   .desktop-nav, .contact-pill { display: none; }
   .menu-toggle { display: block; justify-self: end; }
   .site-header.is-overlay .menu-toggle { color: var(--text-on-image); }
-  .mobile-menu-inner { display: flex; min-height: 100%; flex-direction: column; justify-content: center; padding: 7rem 1.5rem 3rem; }
+  /* five rows at clamp(2.5rem, 12vw, 4rem) overflow a short phone, and body scroll is locked
+     while the panel is open — so the panel scrolls itself, and keeps that scroll to itself */
+  .mobile-menu-inner { display: flex; min-height: 100%; max-height: 100%; flex-direction: column; justify-content: center; overflow-y: auto; overscroll-behavior: contain; padding: 7rem 1.5rem 3rem; }
   .mobile-menu-inner nav { display: grid; }
   .mobile-menu-inner nav a { display: grid; grid-template-columns: 3rem 1fr; padding: .8rem 0; border-top: 1px solid var(--border-inverse); font-family: var(--font-editorial); font-size: clamp(2.5rem, 12vw, 4rem); line-height: 1; }
   .mobile-menu-inner nav a span { font-family: var(--font-sans); font-size: .65rem; }
@@ -726,8 +753,10 @@ html.lenis, html.lenis body { height: auto; }
   .home-cta h2 { margin: 3rem 0 2.5rem; }
   .cta-scenarios { margin-bottom: 2.5rem; }
   .cta-scenarios li:hover { padding-left: 0; } /* no hover target on touch — keep the rows aligned */
-  .site-footer { grid-template-columns: 1fr 1fr; gap: 3rem 1rem; }
+  .site-footer { grid-template-columns: 1fr 1fr; gap: 2.5rem 1rem; }
   .footer-brand { grid-column: 1 / -1; }
+  .site-footer > p { grid-column: 1 / -1; }
+  .footer-social { gap: .9rem; }
   .footer-bottom { margin-top: 2rem; }
   .page-hero { min-height: calc(90svh - 5rem); padding-top: 8rem; }
   .page-hero h1 { margin: 4rem 0 2rem; }

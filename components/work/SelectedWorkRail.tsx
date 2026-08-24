@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import { buildEntrance, buildHover } from "@/components/work/caseChoreography";
 import { cardOffsetY, cardScale, RAIL, railBounds } from "@/components/work/railMotion";
+import { stageHeight } from "@/lib/viewport";
 
 /** Pinned horizontal rail: vertical scroll drags the card track sideways.
  *  Cards passed as children stay server-rendered (inlined SVGs never hydrate).
@@ -106,7 +107,7 @@ export function SelectedWorkRail({ intro, cta, children }: { intro: React.ReactN
               trigger: stage,
               start: "top top",
               // px, not vh — iOS address bar. Long runway so cards arrive one at a time.
-              end: () => `+=${Math.round(window.innerHeight * (RAIL.RUNWAY_VH_PER_CARD / 100) * cards.length)}`,
+              end: () => `+=${Math.round(stageHeight() * (RAIL.RUNWAY_VH_PER_CARD / 100) * cards.length)}`,
               pin: true,
               scrub: RAIL.SCRUB,
               anticipatePin: 1,
@@ -124,9 +125,9 @@ export function SelectedWorkRail({ intro, cta, children }: { intro: React.ReactN
         const approach = ScrollTrigger.create({ trigger: stage, start: "top 75%", onEnter: positionPass });
 
         positionPass();
-        // card widths shift when the display face swaps in, which moves every
-        // offset the geometry above is measured from
-        void document.fonts?.ready.then(() => ScrollTrigger.refresh());
+        // card widths shift when the display face swaps in, which moves every offset the
+        // geometry above is measured from — the font-ready refresh that handles it is global
+        // now (MotionProvider), so it reaches the mobile branch too
 
         // transforms create no scroll: tabbing to an off-screen card (or the
         // in-track CTA) must move the pin so focus stays visible

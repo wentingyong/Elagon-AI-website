@@ -7,9 +7,11 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ArrowIcon } from "@/components/ArrowIcon";
 import { DigitalRain } from "@/components/hero/DigitalRain";
 import { DitherDissolve } from "@/components/hero/DitherDissolve";
+import { stageHeight } from "@/lib/viewport";
 import {
   createHeroMotion,
   HERO_ASSETS,
+  HERO_SIZES,
   HERO_TRAVEL_VH,
   heroScript,
   IDLE_PARALLAX,
@@ -66,12 +68,12 @@ function HeroStatic() {
   return (
     <section className="hero-stage hero-stage-static">
       <div className="hs-static-panel">
-        <Image src={HERO_ASSETS.s1Poster} alt={SCENE_LABEL} fill preload sizes="100vw" />
+        <Image src={HERO_ASSETS.s1Poster} alt={SCENE_LABEL} fill preload sizes={HERO_SIZES.s1Poster} quality={90} />
         <SiteHeader overlay />
         <SplitHeadline />
       </div>
       <div className="hs-static-panel">
-        <Image src={HERO_ASSETS.s2Poster} alt="" fill sizes="100vw" />
+        <Image src={HERO_ASSETS.s2Poster} alt="" fill sizes={HERO_SIZES.s2Poster} quality={90} />
         <h2 className="hs-interlude hs-interlude-static">
           <span>{heroInterlude[0]}</span>
           <span>{heroInterlude[1]}</span>
@@ -93,7 +95,10 @@ export function HeroScroll() {
     const stage = root.current;
     if (!stage || window.matchMedia(REDUCED_QUERY).matches) return;
     const motion = motionRef.current;
-    motion.factor = window.matchMedia(MOBILE_QUERY).matches ? 0.5 : 1;
+    const mobile = window.matchMedia(MOBILE_QUERY);
+    const readFactor = () => { motion.factor = mobile.matches ? 0.5 : 1; };
+    readFactor();
+    mobile.addEventListener("change", readFactor); // a rotate used to leave the desktop amplitudes in place
 
     let cancelled = false;
     let context: { revert: () => void } | undefined;
@@ -140,12 +145,13 @@ export function HeroScroll() {
           scrollTrigger: {
             trigger: stage,
             start: "top top",
-            end: () => `+=${Math.round(window.innerHeight * (HERO_TRAVEL_VH / 100))}`, // px, not vh — iOS address bar (caution §4)
+            end: () => `+=${Math.round(stageHeight() * (HERO_TRAVEL_VH / 100))}`, // px off the LARGE viewport, so the iOS toolbar cannot move it (caution §4)
             pin: true,
             scrub: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
             refreshPriority: 3, // hero 3 > rail 2 > where 1 — three pins must refresh in document order
+            onToggle: (self) => stage.classList.toggle("is-live", self.isActive), // scopes will-change
             onUpdate: (self) => {
               motion.p = self.progress;
               if (self.progress > 0.05 && intro.isActive()) { intro.progress(1); clearWipe(); }
@@ -216,6 +222,7 @@ export function HeroScroll() {
 
     return () => {
       cancelled = true;
+      mobile.removeEventListener("change", readFactor);
       context?.revert();
     };
   }, []);
@@ -232,6 +239,13 @@ export function HeroScroll() {
     visibility.observe(stage);
 
     if (window.location.search.includes("heroDebug")) stage.classList.add("hs-debug");
+
+    // a coarse pointer is a phone or tablet: the front rain band never survived the probe there,
+    // so pay the cost up front rather than four seconds of jank before it self-corrects
+    if (window.matchMedia("(pointer: coarse)").matches) {
+      motion.quality.frontRain = false;
+      stage.classList.add("hs-lite");
+    }
 
     const probeDelay = window.setTimeout(() => {
       let frames = 0;
@@ -261,28 +275,28 @@ export function HeroScroll() {
     <section className="hero-stage" ref={root}>
       <div className="hs-scene" role="img" aria-label={SCENE_LABEL}>
         <div className="hs-layer hs-move" data-hs="s1-a">
-          <div className="hs-inner" data-hsp="s1-a"><Image src={HERO_ASSETS.s1Sky} alt="" fill preload sizes="100vw" /></div>
+          <div className="hs-inner" data-hsp="s1-a"><Image src={HERO_ASSETS.s1Sky} alt="" fill preload sizes={HERO_SIZES.s1Sky} quality={90} /></div>
         </div>
         <div className="hs-layer hs-s2 hs-move" data-hs="s2-a">
-          <div className="hs-inner"><Image src={HERO_ASSETS.s2Sky} alt="" fill sizes="100vw" /></div>
+          <div className="hs-inner"><Image src={HERO_ASSETS.s2Sky} alt="" fill sizes={HERO_SIZES.s2Sky} quality={90} /></div>
         </div>
         <DitherDissolve motionRef={motionRef} />
         <DigitalRain band="back" motionRef={motionRef} />
         <div className="hs-layer hs-s2 hs-move" data-hs="s2-b">
-          <div className="hs-inner"><Image src={HERO_ASSETS.s2Lake} alt="" fill sizes="100vw" /></div>
+          <div className="hs-inner"><Image src={HERO_ASSETS.s2Lake} alt="" fill sizes={HERO_SIZES.s2Lake} quality={90} /></div>
         </div>
         <div className="hs-layer hs-move" data-hs="s1-b">
-          <div className="hs-inner" data-hsp="s1-b"><Image src={HERO_ASSETS.s1City} alt="" fill loading="eager" sizes="100vw" /></div>
+          <div className="hs-inner" data-hsp="s1-b"><Image src={HERO_ASSETS.s1City} alt="" fill loading="eager" sizes={HERO_SIZES.s1City} quality={90} /></div>
         </div>
         <div className="hs-layer hs-move" data-hs="s1-c">
-          <div className="hs-inner" data-hsp="s1-c"><Image src={HERO_ASSETS.s1Temple} alt="" fill loading="eager" sizes="100vw" /></div>
+          <div className="hs-inner" data-hsp="s1-c"><Image src={HERO_ASSETS.s1Temple} alt="" fill loading="eager" sizes={HERO_SIZES.s1Temple} quality={90} /></div>
         </div>
         <DigitalRain band="front" motionRef={motionRef} />
         <div className="hs-layer hs-move" data-hs="s1-d">
-          <div className="hs-inner" data-hsp="s1-d"><Image src={HERO_ASSETS.s1Trees} alt="" fill loading="eager" sizes="100vw" /></div>
+          <div className="hs-inner" data-hsp="s1-d"><Image src={HERO_ASSETS.s1Trees} alt="" fill loading="eager" sizes={HERO_SIZES.s1Trees} quality={90} /></div>
         </div>
         <div className="hs-layer hs-s2 hs-move" data-hs="s2-c">
-          <div className="hs-inner"><Image src={HERO_ASSETS.s2Arch} alt="" fill sizes="100vw" quality={90} /></div>
+          <div className="hs-inner"><Image src={HERO_ASSETS.s2Arch} alt="" fill sizes={HERO_SIZES.s2Arch} quality={90} /></div>
         </div>
         <div className="hs-vignette hs-s2" aria-hidden="true" />
       </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Fragment, useLayoutEffect, useRef } from "react";
 import { PrimaryCTA } from "@/components/PrimaryCTA";
+import { stageHeight } from "@/lib/viewport";
 import {
   BOX_SETTLE,
   FRAME,
@@ -20,6 +21,10 @@ import {
 import { frictions, whereWeWork } from "@/content/site";
 
 /** Word spans for a p-driven stagger; the parent carries the real text as an aria-label. */
+/** WHERE_QUERY minus its motion clause: reduced motion keeps the same plate, it only unwinds
+ *  the stage around it. Must stay complementary to WHERE_QUERY_SMALL — see whereSequence. */
+const PLATE_MEDIA = "(min-width: 768px), (orientation: landscape)";
+
 const words = (text: string, className: string) =>
   text.split(" ").map((word, index) => (
     <Fragment key={index}><span className={className}>{word}</span>{" "}</Fragment>
@@ -71,7 +76,7 @@ export function WhereScroll() {
           scrollTrigger: {
             trigger: stage,
             start: "top top",
-            end: () => `+=${Math.round(window.innerHeight * (WHERE_TRAVEL_VH / 100))}`, // px, not vh — iOS address bar
+            end: () => `+=${Math.round(stageHeight() * (WHERE_TRAVEL_VH / 100))}`, // px off the LARGE viewport, so the iOS toolbar cannot move it
             pin: true,
             scrub: true,
             anticipatePin: 1,
@@ -196,10 +201,14 @@ export function WhereScroll() {
           <div className="wf-frame-shift" data-wfp="frame">
             <div className="wf-frame-inner">
               {/* genuine art direction — two different crops of the plate, not one image at two
-                  sizes — so this is <picture>/media rather than next/image's srcSet. The media
-                  string must stay identical to WHERE_QUERY. */}
+                  sizes — so this is <picture>/media rather than next/image's srcSet. */}
+              {/* AVIF first in each branch: these two plates never reach next/image's optimizer,
+                  which is where the rest of the site gets its AVIF, and the portrait cut is
+                  272KB as AVIF against 566KB as WebP. The <img> is the universal fallback. */}
               <picture>
-                <source media="(min-aspect-ratio: 3 / 5)" srcSet={PLATE.wide.src} width={PLATE.wide.w} height={PLATE.wide.h} />
+                <source media={PLATE_MEDIA} type="image/avif" srcSet={PLATE.wide.avif} width={PLATE.wide.w} height={PLATE.wide.h} />
+                <source media={PLATE_MEDIA} srcSet={PLATE.wide.src} width={PLATE.wide.w} height={PLATE.wide.h} />
+                <source type="image/avif" srcSet={PLATE.small.avif} width={PLATE.small.w} height={PLATE.small.h} />
                 <img src={PLATE.small.src} alt="" width={PLATE.small.w} height={PLATE.small.h} loading="lazy" decoding="async" />
               </picture>
             </div>

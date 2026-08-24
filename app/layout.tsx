@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Analytics as VercelAnalytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@/components/Analytics";
 import { Footer } from "@/components/Footer";
 import { MotionProvider } from "@/components/MotionProvider";
+import { socialLinks } from "@/content/site";
 import {
   absoluteUrl,
   SITE_LANGUAGE,
@@ -15,6 +16,18 @@ import {
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+
+/** Without an explicit themeColor, Safari samples whatever is under its chrome, so the bar
+ *  changed colour between the hero, the cream sections and the footer as you scrolled. The two
+ *  entries pin it to the hero's deep green in dark mode and the page cream in light. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#e9e2d0" },
+    { media: "(prefers-color-scheme: dark)", color: "#263121" },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -48,6 +61,8 @@ const structuredData = [
     logo: absoluteUrl("/brand/icon.png"),
     description: seoCopy.home.description,
     email: "jordan@elagon.ai",
+    // how Google ties the profiles to the entity — sourced from the same list the footer renders
+    sameAs: socialLinks.filter((item) => item.href.startsWith("http") && item.href !== SITE_URL).map((item) => item.href),
     address: {
       "@type": "PostalAddress",
       addressLocality: "Toronto",
