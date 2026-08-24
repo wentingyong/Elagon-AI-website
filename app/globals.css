@@ -166,7 +166,7 @@ html.lenis, html.lenis body { height: auto; }
 /* ——— Where we work: pinned frame stage (components/where/whereSequence.ts) ——— */
 /* overlaps the rail's pinned stage by 2px — same fractional-pixel hairline fix as .selected-work */
 .where-work { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-cream); }
-.wf-stage { --wf-ratio: 1.48857; --wf-base: 1.06; --wf-rail: 22%; --wb: min(32svh, 22vw); --wb-step: calc(var(--wb) * 1.025); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100svh; min-height: 40rem; overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; }
+.wf-stage { --wf-ratio: 1.48857; --wf-base: 1.06; --wf-minh: 40rem; --wf-rail: 22%; --wb: min(32svh, 22vw); --wb-step: calc(var(--wb) * 1.025); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100svh; min-height: var(--wf-minh); overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; }
 .wf-plane { position: absolute; inset: 0; }
 /* will-change only while the stage is pinned — this is the page's third pinned stage (§8 risk 5) */
 .wf-stage.is-live .wf-move { will-change: transform; }
@@ -185,14 +185,15 @@ html.lenis, html.lenis body { height: auto; }
 /* the frame plane is inset:0 so GSAP's yPercent === % of the STAGE box; the oversized cover
    box lives inside it and is centred with `translate` so nothing writes transform twice.
    width = cover × --wf-base: the pre-scale buys the vertical headroom the tilt spends, and the
-   plate is opaque along the top and OPEN at the bottom. --wf-ratio is the plate's own W/H,
-   so this one rule covers both the wide and the portrait cut. */
+   plate is opaque along the top and OPEN at the bottom. --wf-ratio is the plate's own W/H, so
+   this one rule covers both cuts; the height term is max(100svh, --wf-minh) because min-height
+   can push the stage past the viewport on short screens and the cover has to follow. */
 /* CAUTION: GSAP must never transform .wf-frame-inner. The moment it does, it folds this
    `translate` into its own matrix and writes `translate: none` inline — and any later
    clearProps/revert then leaves the plate's corner pinned to the stage centre. The parallax
    therefore rides .wf-frame-shift, a plain stage-sized plane, and this box is layout-only. */
 .wf-frame-shift { position: absolute; inset: 0; }
-.wf-frame-inner { position: absolute; left: 50%; top: 50%; width: calc(max(100%, calc(var(--wf-ratio) * 100svh)) * var(--wf-base)); translate: -50% -50%; }
+.wf-frame-inner { position: absolute; left: 50%; top: 50%; width: calc(max(100%, calc(var(--wf-ratio) * max(100svh, var(--wf-minh)))) * var(--wf-base)); translate: -50% -50%; }
 .wf-frame-inner img { display: block; width: 100%; height: auto; }
 /* the eyebrow sits on the canopy, whose p90 luminance is ~141 → cream reads 2.5:1 unscrimmed.
    A text-shadow cannot fix that; the localized wash lands the worst pixel at ~8:1 (design system §8.3) */
@@ -248,10 +249,9 @@ html.lenis, html.lenis body { height: auto; }
 /* ——— the small-screen stage: portrait plate, same script, same beats. The opening is a tall
    slot left of the columns, so the staircase becomes a vertical cascade with an alternating
    indent rather than a diagonal. Copy and blocks sit in the band the alpha scan proves clear
-   (plate x .09–.66 across y .37–.62). Must stay complementary to the wide query above. */
-@media (max-width: 899px) and (prefers-reduced-motion: no-preference),
-       (max-aspect-ratio: 5 / 4) and (prefers-reduced-motion: no-preference) {
-  .wf-stage { --wf-ratio: .52079; --wf-rail: 6%; --wb: min(52vw, 30svh); --wb-step: 0; --wf-pad: clamp(.9rem, 3.6vw, 1.4rem); min-height: 34rem; }
+   (plate x .09–.66 across y .37–.62). Gated on aspect alone — see WHERE_QUERY_SMALL. */
+@media (max-aspect-ratio: 3 / 5) and (prefers-reduced-motion: no-preference) {
+  .wf-stage { --wf-ratio: .52079; --wf-rail: 6%; --wb: min(52vw, 30svh); --wb-step: 0; --wf-pad: clamp(.9rem, 3.6vw, 1.4rem); --wf-minh: 34rem; }
   .wf-eyebrow { left: 8%; top: 5%; }
   /* sits low on purpose: higher up the canopy's fringe reaches in to plate x .20 and eats the
      first characters of every line */
