@@ -33,6 +33,7 @@ const COMPOSITES = [
 const PLATES = [
   ["servies/3-A.png", "where/where-frame.webp"],
   ["servies/3-A-small.png", "where/where-frame-small.webp"], // portrait plate for the small-screen stage
+  ["servies/4-A.png", "cta/cta-frame.webp"], // home final-CTA background (components/Editorial.tsx HomeFinalCTA)
 ];
 
 let total = 0;
