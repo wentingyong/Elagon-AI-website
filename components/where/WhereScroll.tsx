@@ -123,8 +123,9 @@ export function WhereScroll() {
           const progress = timeline.scrollTrigger?.progress ?? 0;
           const idle = Math.max(0, 1 - progress / 0.12);
           if (!drift || !idle) return;
-          drift.x((event.clientX / window.innerWidth - 0.5) * 1.6 * idle); // stays inside the plate's horizontal bleed
-          drift.y((event.clientY / window.innerHeight - 0.5) * 1.4 * idle);
+          // % of the stage-sized shift plane now; stays inside the plate's horizontal bleed
+          drift.x((event.clientX / window.innerWidth - 0.5) * 1.6 * idle);
+          drift.y((event.clientY / window.innerHeight - 0.5) * 1 * idle);
         };
         stage.addEventListener("pointermove", onPointerMove);
 
@@ -144,7 +145,7 @@ export function WhereScroll() {
           stage.classList.remove("is-live", "is-outro");
           stage.querySelectorAll(".is-open").forEach((box) => box.classList.remove("is-open"));
           gsap.set(
-            '.wf-ground, .wf-boxes, [data-wf="frame"], [data-wfp="frame"], .wf-box, .wf-card-rot, .wf-eyebrow, .wf-h2-word, .wf-lede, .wf-cl-word, .wf-close .primary-cta, .wf-handoff',
+            '.wf-ground, .wf-boxes, [data-wf="frame"], .wf-frame-shift, .wf-box, .wf-card-rot, .wf-eyebrow, .wf-h2-word, .wf-lede, .wf-cl-word, .wf-close .primary-cta, .wf-handoff',
             { clearProps: "all" },
           );
         };
@@ -179,8 +180,13 @@ export function WhereScroll() {
           ))}
         </div>
         <div className="wf-plane wf-frame wf-move" data-wf="frame" aria-hidden="true">
-          <div className="wf-frame-inner" data-wfp="frame">
-            <Image src={WHERE_ASSETS.frame} alt="" width={1432} height={962} sizes="(max-width: 899px) 200vw, 130vw" />
+          {/* three levels, one transform writer each (the hero's .hs-layer/.hs-inner pattern):
+              scrub → .wf-frame, parallax → .wf-frame-shift, and .wf-frame-inner keeps its
+              translate-based centring with GSAP never touching it */}
+          <div className="wf-frame-shift" data-wfp="frame">
+            <div className="wf-frame-inner">
+              <Image src={WHERE_ASSETS.frame} alt="" width={1432} height={962} sizes="(max-width: 899px) 200vw, 130vw" />
+            </div>
           </div>
         </div>
         <div className="wf-close">

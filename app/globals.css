@@ -173,6 +173,11 @@ html.lenis, html.lenis body { height: auto; }
    box lives inside it and is centred with `translate` so nothing writes transform twice.
    width = cover × --wf-base: the pre-scale buys the vertical headroom the tilt spends, and the
    plate is zero-bleed on three edges and OPEN at the bottom. 148.86svh = ratio × 100. */
+/* CAUTION: GSAP must never transform .wf-frame-inner. The moment it does, it folds this
+   `translate` into its own matrix and writes `translate: none` inline — and any later
+   clearProps/revert then leaves the plate's corner pinned to the stage centre. The parallax
+   therefore rides .wf-frame-shift, a plain stage-sized plane, and this box is layout-only. */
+.wf-frame-shift { position: absolute; inset: 0; }
 .wf-frame-inner { position: absolute; left: 50%; top: 50%; width: calc(max(100%, 148.86svh) * var(--wf-base)); translate: -50% -50%; }
 .wf-frame-inner img { display: block; width: 100%; height: auto; }
 /* the eyebrow sits on the canopy, whose p90 luminance is ~141 → cream reads 2.5:1 unscrimmed.
@@ -213,7 +218,7 @@ html.lenis, html.lenis body { height: auto; }
 /* short cream fade: hides the pin's fractional-pixel bottom edge and settles the plate's
    foliage into the ground plane behind the closing statement */
 .wf-handoff { position: absolute; right: 0; bottom: 0; left: 0; height: 12vh; background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--brand-cream) 55%, transparent) 62%, var(--brand-cream) 96%); }
-.wf-debug .wf-plane, .wf-debug .wf-frame-inner { outline: 1px dashed rgb(255 80 80 / 80%); outline-offset: -1px; }
+.wf-debug .wf-plane, .wf-debug .wf-frame-shift, .wf-debug .wf-frame-inner { outline: 1px dashed rgb(255 80 80 / 80%); outline-offset: -1px; }
 
 /* the pinned branch — must stay exactly complementary to the stacked query below, and to
    WHERE_QUERY in whereSequence.ts. Scene-2 elements start hidden here (and on a no-JS first
@@ -237,6 +242,7 @@ html.lenis, html.lenis body { height: auto; }
      on tall viewports. DOM order stays h2 → h3s for the heading outline, so `order` is what
      puts the banner first visually. */
   .wf-frame { position: relative; order: -1; inset: auto; max-height: 52svh; overflow: hidden; }
+  .wf-frame-shift { position: static; }
   .wf-frame-inner { position: relative; left: auto; top: auto; width: 100%; translate: none; }
   /* the copy leaves the plate for the cream below it — cream on foliage never reads at this size */
   .wf-eyebrow, .wf-copy, .wf-close { position: static; width: auto; max-width: none; }
