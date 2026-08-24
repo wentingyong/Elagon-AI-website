@@ -11,6 +11,7 @@ export const MOBILE_QUERY = "(max-width: 720px)";
 
 export const HERO_ASSETS = {
   s1Sky: "/hero/hero-s1-a-sky.webp",
+  s1Moon: "/hero/hero-s1-a1-moon.webp",
   s1City: "/hero/hero-s1-b-city.webp",
   s1Temple: "/hero/hero-s1-c-temple.webp",
   s1Trees: "/hero/hero-s1-d-trees.webp",
@@ -38,6 +39,7 @@ const mobile = (vw: number) => `(max-width: 767px) ${vw}vw, 100vw`;
 
 export const HERO_SIZES = {
   s1Sky: mobile(390),
+  s1Moon: mobile(390), // the moon plate shares the sky's canvas and cover geometry, so it paints identically
   s1City: mobile(236),
   s1Temple: mobile(202),
   s1Trees: mobile(179),
@@ -54,7 +56,7 @@ export const DISSOLVE = {
   band: [0.42, 0.585],
   sweep: [0.45, 0.58],
   cellPx: 7, // aligned to device pixels at draw time (caution §8)
-  s1SkyScale: 1.18, // 1-A held at the end of its push
+  s1SkyScale: 1.18, // 1-A held at the end of its push — the moon plate is drawn at the same scale
   s2SkyScale: [1.12, 1.06], // must mirror the DOM tween on [data-hs="s2-a"]
   s2SkySettle: [0.45, 0.6],
 } as const;
@@ -102,8 +104,14 @@ export const heroScript: HeroStep[] = [
   { target: '[data-hs="s1-b"]', at: [0.15, 0.4], from: { scale: 1, yPercent: 0 }, to: { scale: 1.12, yPercent: 10 }, ease: "power2.in" },
   { target: '[data-hs="s1-b"]', at: [0.38, 0.45], from: { autoAlpha: 1 }, to: { autoAlpha: 0 }, ease: "none" },
   { target: '[data-hs="s1-a"]', at: [0.15, 0.4], from: { scale: 1.08 }, to: { scale: 1.18 }, ease: "none" },
+  // The moon rides the sky. DitherDissolve paints it into the S1 bitmap so the Bayer grain eats
+  // both together, which means this scale must stay identical to [data-hs="s1-a"] above — any
+  // divergence shows as a jump the frame the canvas takes over at p=0.42. Depth separation for
+  // the moon comes from IDLE_PARALLAX, not from the scroll.
+  { target: '[data-hs="s1-a1"]', at: [0.15, 0.4], from: { scale: 1.08 }, to: { scale: 1.18 }, ease: "none" },
   // release S1 sky from the render tree once the dissolve has fully handed over (§9 memory)
   { target: '[data-hs="s1-a"]', at: [0.585, 0.6], from: { autoAlpha: 1 }, to: { autoAlpha: 0 }, ease: "none" },
+  { target: '[data-hs="s1-a1"]', at: [0.585, 0.6], from: { autoAlpha: 1 }, to: { autoAlpha: 0 }, ease: "none" },
 
   // ——— Dissolve band (0.40–0.60): DOM crossfade is the baseline; the Bayer
   // canvas renders the true dither above it whenever it is available.
@@ -127,9 +135,14 @@ export const heroScript: HeroStep[] = [
   { target: ".hs-handoff", at: [0.9, 1], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
 ];
 
-/** Mouse parallax amplitudes during the idle stage, in percent (§4 row 1). */
-export const IDLE_PARALLAX: ReadonlyArray<{ target: string; amp: number }> = [
+/** Mouse parallax amplitudes during the idle stage, in percent (§4 row 1).
+ *  `lag` overrides the shared 0.7s follow. The moon is the only layer that takes it: strict depth
+ *  would put it behind the sky and it would read as wallpaper, while giving it a near-field
+ *  amplitude would read as a sticker. A middling amplitude on a long follow instead lands it half
+ *  a beat after everything else — a heavy body drifting, which is what it is. */
+export const IDLE_PARALLAX: ReadonlyArray<{ target: string; amp: number; lag?: number }> = [
   { target: "s1-a", amp: 0.5 },
+  { target: "s1-a1", amp: 0.9, lag: 1.2 },
   { target: "s1-b", amp: 1 },
   { target: "s1-c", amp: 2 },
   { target: "s1-d", amp: 3 },

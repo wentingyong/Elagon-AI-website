@@ -149,16 +149,19 @@ html.lenis, html.lenis body { height: auto; }
 [data-hs="s1-c"] { transform-origin: 25% 60%; }
 /* stage z-order (plan §3), explicit so a stray filter/opacity can't reflatten it */
 [data-hs="s1-a"] { z-index: 1; }
-[data-hs="s2-a"] { z-index: 2; }
-.hs-dissolve { z-index: 3; }
-.hs-rain-back { z-index: 4; }
-[data-hs="s2-b"] { z-index: 5; }
-[data-hs="s1-b"] { z-index: 6; }
-[data-hs="s1-c"] { z-index: 7; }
-.hs-rain-front { z-index: 8; }
-[data-hs="s1-d"] { z-index: 9; }
-[data-hs="s2-c"] { z-index: 10; }
-.hs-vignette { z-index: 11; }
+/* the moon sits under s2-a on purpose: when the dither canvas is unavailable the plain DOM
+   crossfade is the fallback, and a moon above the incoming sky would hang over the wrong scene */
+[data-hs="s1-a1"] { z-index: 2; }
+[data-hs="s2-a"] { z-index: 3; }
+.hs-dissolve { z-index: 4; }
+.hs-rain-back { z-index: 5; }
+[data-hs="s2-b"] { z-index: 6; }
+[data-hs="s1-b"] { z-index: 7; }
+[data-hs="s1-c"] { z-index: 8; }
+.hs-rain-front { z-index: 9; }
+[data-hs="s1-d"] { z-index: 10; }
+[data-hs="s2-c"] { z-index: 11; }
+.hs-vignette { z-index: 12; }
 .hs-mission { z-index: 13; }
 .hs-handoff { z-index: 14; }
 .hs-nav-blur { z-index: 15; }
@@ -734,7 +737,7 @@ html.lenis, html.lenis body { height: auto; }
   .hero-stage { min-height: 42rem; }
   /* S1 mobile recompose per Figma node 506:1891 (394×852 frame, fractions thereof):
      the sky shows the moon window; city/temple/trees are free-placed alpha layers */
-  [data-hs="s1-a"] img { object-position: 35% center; }
+  [data-hs="s1-a"] img, [data-hs="s1-a1"] img { object-position: 35% center; }
   [data-hsp="s1-b"] { inset: auto; left: -82.2vw; top: 40.5%; width: 235.5vw; height: auto; aspect-ratio: 1897 / 1079; transform: none; }
   [data-hsp="s1-c"] { inset: auto; left: -74.4vw; top: 49.6%; width: 201.5vw; height: auto; aspect-ratio: 1897 / 1079; transform: none; }
   [data-hsp="s1-d"] { inset: auto; left: -74.4vw; top: 55.5%; width: 178.4vw; height: auto; aspect-ratio: 1897 / 1079; transform: none; }

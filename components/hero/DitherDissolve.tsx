@@ -20,11 +20,17 @@ async function loadBitmap(src: string): Promise<ImageBitmap> {
   return createImageBitmap(blob);
 }
 
-function drawCover(ctx: CanvasRenderingContext2D, bmp: ImageBitmap, cw: number, ch: number, scale: number) {
+/** `ox` is the horizontal half of CSS `object-position`, as a fraction. It has to be passed
+ *  rather than assumed centred: under 767px globals.css shifts the S1 plates to `35% center`, and
+ *  a canvas that keeps drawing at 50% slides the sky ~165px sideways the frame it takes over. That
+ *  was survivable on a cloud field; with the moon on the plate it is a body teleporting. */
+const S1_MOBILE = "(max-width: 767px)"; // must track the S1 recompose breakpoint in globals.css
+
+function drawCover(ctx: CanvasRenderingContext2D, bmp: ImageBitmap, cw: number, ch: number, scale: number, ox = 0.5) {
   const s = Math.max(cw / bmp.width, ch / bmp.height) * scale;
   const dw = bmp.width * s;
   const dh = bmp.height * s;
-  ctx.drawImage(bmp, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+  ctx.drawImage(bmp, (cw - dw) * ox, (ch - dh) / 2, dw, dh);
 }
 
 /**
@@ -44,6 +50,7 @@ export function DitherDissolve({ motionRef }: { motionRef: RefObject<HeroMotion>
     if (!canvas || !ctx || !motion) return;
 
     let s1: ImageBitmap | undefined;
+    let s1Moon: ImageBitmap | undefined;
     let s2: ImageBitmap | undefined;
     let loading = false;
     let raf = 0;
@@ -54,6 +61,14 @@ export function DitherDissolve({ motionRef }: { motionRef: RefObject<HeroMotion>
 
     const mask = document.createElement("canvas");
     const temp = document.createElement("canvas");
+
+    const narrow = window.matchMedia(S1_MOBILE);
+    let originX = narrow.matches ? 0.35 : 0.5;
+    const readOrigin = () => {
+      originX = narrow.matches ? 0.35 : 0.5;
+      lastT = -1; // force a redraw at the new framing
+    };
+    narrow.addEventListener("change", readOrigin);
 
     const observer = new ResizeObserver((entries) => {
       const rect = entries[0].contentRect;
@@ -75,6 +90,12 @@ export function DitherDissolve({ motionRef }: { motionRef: RefObject<HeroMotion>
         .catch(() => {
           motion.quality.dither = false;
         });
+      // the moon loads on its own so a miss costs the moon, not the whole dissolve
+      void loadBitmap(HERO_ASSETS.s1Moon)
+        .then((m) => {
+          s1Moon = m;
+        })
+        .catch(() => {});
     };
 
     const step = () => {
@@ -135,13 +156,15 @@ export function DitherDissolve({ motionRef }: { motionRef: RefObject<HeroMotion>
       }
       const tempCtx = temp.getContext("2d")!;
       tempCtx.clearRect(0, 0, cw, ch);
-      drawCover(tempCtx, s2!, cw, ch, s2Scale);
+      drawCover(tempCtx, s2!, cw, ch, s2Scale, 0.5); // the S2 plates have no object-position override
       tempCtx.globalCompositeOperation = "destination-in";
       tempCtx.imageSmoothingEnabled = false;
       tempCtx.drawImage(mask, 0, 0, cellsX * cell, cellsY * cell);
       tempCtx.globalCompositeOperation = "source-over";
 
-      drawCover(ctx, s1!, cw, ch, 1 + (DISSOLVE.s1SkyScale - 1) * motion.factor);
+      const s1Scale = 1 + (DISSOLVE.s1SkyScale - 1) * motion.factor;
+      drawCover(ctx, s1!, cw, ch, s1Scale, originX);
+      if (s1Moon) drawCover(ctx, s1Moon, cw, ch, s1Scale, originX); // same plate canvas, so same cover math
       ctx.drawImage(temp, 0, 0);
     };
     raf = requestAnimationFrame(step);
@@ -149,7 +172,9 @@ export function DitherDissolve({ motionRef }: { motionRef: RefObject<HeroMotion>
     return () => {
       cancelAnimationFrame(raf);
       observer.disconnect();
+      narrow.removeEventListener("change", readOrigin);
       s1?.close();
+      s1Moon?.close();
       s2?.close();
     };
   }, [motionRef]);

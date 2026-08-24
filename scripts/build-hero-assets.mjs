@@ -13,14 +13,31 @@ const PUBLIC_DIR = path.resolve(import.meta.dirname, "../public");
 const HERO_DIR = path.join(PUBLIC_DIR, "hero");
 const QUALITY = 82;
 
+/** The scene-1 canvas. 1-A came back from its re-export at 1922x1072 while 1-A-1/1-B/1-C/1-D
+ *  are all 1897x1079 — and every S1 layer is `object-fit: cover` in the same box, so two
+ *  aspect ratios means the sky and the moon crop differently and the moon slides off the spot
+ *  it was drawn on (worse on mobile, where the sky carries `object-position: 35% center`).
+ *  A cover-crop back to the shared canvas is a 0.65% upscale and ~19px off each side. */
+const S1_CANVAS = [1897, 1079];
+
 /** [source, output, opts?]. `width` supersamples the source before encoding; `quality`
- *  overrides QUALITY. The arch is the only layer that earns both: it is the scene-2
- *  foreground, it is held at rest under the mission copy, and the entrance dollies it
- *  from 1.8x — so it is the one layer where the browser's own upscaling is visible.
- *  1.5x lanczos plus a light unsharp is a resample, not new detail (the render is soft
- *  at 1:1), but it keeps the dolly and retina from adding a second layer of mush. */
+ *  overrides QUALITY; `canvas` cover-crops to S1_CANVAS first; `flatten` drops a dead alpha
+ *  channel. Two layers earn a supersample:
+ *
+ *  The arch is the scene-2 foreground, it is held at rest under the mission copy, and the
+ *  entrance dollies it from 1.8x — so it is the one full-frame layer where the browser's own
+ *  upscaling is visible. 1.5x lanczos plus a light unsharp is a resample, not new detail (the
+ *  render is soft at 1:1), but it keeps the dolly and retina from adding a second layer of mush.
+ *
+ *  The moon is the same argument on a small object: the disc is only 430px of the 1897 plate,
+ *  which paints ~353 CSS px on a 1440 stage — ~706 device px on retina, a 1.64x upscale of a
+ *  hard-edged crater-detailed body. At 1.5x the disc is 645px and that drops to ~1.09x. It keeps
+ *  the full S1 canvas rather than being cropped to its bbox so it inherits the sky's cover
+ *  geometry for free; the transparent 78% of the plate costs ~16KB, which is cheaper than the
+ *  CSS placement math a cropped plate would need. */
 const LAYERS = [
-  ["1-A.png", "hero-s1-a-sky.webp"],
+  ["1-A.png", "hero-s1-a-sky.webp", { canvas: true, flatten: true, quality: 86 }], // re-export is opaque: the moon moved to 1-A-1
+  ["1-A-1.png", "hero-s1-a1-moon.webp", { width: 2846, quality: 88, sharpen: true }],
   ["1-B.png", "hero-s1-b-city.webp"],
   ["1-C.png", "hero-s1-c-temple.webp"],
   ["1-D.png", "hero-s1-d-trees.webp"],
@@ -30,9 +47,14 @@ const LAYERS = [
 ];
 
 const COMPOSITES = [
-  { out: "hero-s1-poster.webp", stack: ["1-A.png", "1-B.png", "1-C.png", "1-D.png"] },
+  { out: "hero-s1-poster.webp", stack: ["1-A.png", "1-A-1.png", "1-B.png", "1-C.png", "1-D.png"] },
   { out: "hero-s2-poster.webp", stack: ["2-A.png", "2-B.png", "2-C.png"] },
 ];
+
+/** Raw PNG → the shared S1 canvas. Both the layer loop and the poster composite need it:
+ *  sharp refuses a composite whose input is larger than its base. */
+const onCanvas = (file) =>
+  sharp(path.join(HERO_DIR, file)).resize(S1_CANVAS[0], S1_CANVAS[1], { fit: "cover", position: "center", kernel: "lanczos3" });
 
 /** Single plates that live outside public/hero. Source dir keeps the delivered name; the
  *  shipped URL gets the convention one (the source folder is misspelled `servies`).
@@ -53,9 +75,10 @@ const SOCIAL_CARD = ["brand/meta.png", "brand/meta.jpg"];
 let total = 0;
 
 for (const [src, out, opts = {}] of LAYERS) {
-  let pipe = sharp(path.join(HERO_DIR, src));
+  let pipe = opts.canvas ? onCanvas(src) : sharp(path.join(HERO_DIR, src));
   if (opts.width) pipe = pipe.resize({ width: opts.width, kernel: "lanczos3" });
   if (opts.sharpen) pipe = pipe.sharpen({ sigma: 0.7, m1: 0.4, m2: 0.9 });
+  if (opts.flatten) pipe = pipe.removeAlpha();
   // alphaQuality 100: these are cut-out layers, a soft alpha edge reads as a halo
   const buffer = await pipe.webp({ quality: opts.quality ?? QUALITY, effort: 6, alphaQuality: 100 }).toBuffer();
   await writeFile(path.join(HERO_DIR, out), buffer);
@@ -66,7 +89,8 @@ for (const [src, out, opts = {}] of LAYERS) {
 
 for (const { out, stack } of COMPOSITES) {
   const [base, ...rest] = stack;
-  const buffer = await sharp(path.join(HERO_DIR, base))
+  const baseBuffer = base === "1-A.png" ? await onCanvas(base).png().toBuffer() : path.join(HERO_DIR, base);
+  const buffer = await sharp(baseBuffer)
     .composite(await Promise.all(rest.map(async (file) => ({ input: await readFile(path.join(HERO_DIR, file)) }))))
     .webp({ quality: QUALITY })
     .toBuffer();

@@ -195,13 +195,13 @@ export function HeroScroll() {
 
         // ——— idle-stage mouse parallax, fading out by p=0.15 (§4 row 1)
         if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-          const movers = IDLE_PARALLAX.map(({ target, amp: amplitude }) => {
+          const movers = IDLE_PARALLAX.map(({ target, amp: amplitude, lag = 0.7 }) => {
             const el = stage.querySelector<HTMLElement>(`[data-hsp="${target}"]`);
             return el
               ? {
                   amplitude,
-                  x: gsap.quickTo(el, "xPercent", { duration: 0.7, ease: "power2.out" }),
-                  y: gsap.quickTo(el, "yPercent", { duration: 0.7, ease: "power2.out" }),
+                  x: gsap.quickTo(el, "xPercent", { duration: lag, ease: "power2.out" }),
+                  y: gsap.quickTo(el, "yPercent", { duration: lag, ease: "power2.out" }),
                 }
               : null;
           });
@@ -276,6 +276,9 @@ export function HeroScroll() {
       <div className="hs-scene" role="img" aria-label={SCENE_LABEL}>
         <div className="hs-layer hs-move" data-hs="s1-a">
           <div className="hs-inner" data-hsp="s1-a"><Image src={HERO_ASSETS.s1Sky} alt="" fill preload sizes={HERO_SIZES.s1Sky} quality={90} /></div>
+        </div>
+        <div className="hs-layer hs-move" data-hs="s1-a1">
+          <div className="hs-inner" data-hsp="s1-a1"><Image src={HERO_ASSETS.s1Moon} alt="" fill loading="eager" sizes={HERO_SIZES.s1Moon} quality={90} /></div>
         </div>
         <div className="hs-layer hs-s2 hs-move" data-hs="s2-a">
           <div className="hs-inner"><Image src={HERO_ASSETS.s2Sky} alt="" fill sizes={HERO_SIZES.s2Sky} quality={90} /></div>
