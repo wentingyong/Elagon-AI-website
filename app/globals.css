@@ -61,6 +61,10 @@
   --halo-mission: 0 4px 20px rgb(89 107 74 / 100%), 0 2px 9px rgb(89 107 74 / 92%), 0 0 34px rgb(89 107 74 / 68%);
   --halo-ink: 0 0 3px rgb(10 12 8 / 92%), 0 1px 4px rgb(10 12 8 / 82%), 0 0 9px rgb(10 12 8 / 70%), 0 0 20px rgb(10 12 8 / 46%);
   --halo-ink-strong: 0 0 3px rgb(10 12 8 / 95%), 0 1px 4px rgb(10 12 8 / 90%), 0 0 9px rgb(10 12 8 / 80%), 0 0 18px rgb(10 12 8 / 60%), 0 0 34px rgb(10 12 8 / 38%);
+  /* the lede runs at body size over the bright middle of the plate, where --halo-green's wide
+     green pass tints more than it separates. Neutral-dark instead: a tight core for the glyph
+     edges, then a wide low-alpha pool that grounds the block without reading as a shadow */
+  --halo-lede: 0 1px 2px rgb(24 30 20 / 70%), 0 2px 9px rgb(24 30 20 / 55%), 0 0 26px rgb(24 30 20 / 42%);
 }
 
 * { box-sizing: border-box; }
@@ -200,7 +204,7 @@ html.lenis, html.lenis body { height: auto; }
 .hero-word { display: inline-block; will-change: transform; }
 .hero-connector { display: inline-block; font-size: .34em; font-weight: 400; letter-spacing: -.04em; line-height: 1; }
 .hero-lede-word { display: inline-block; }
-.hero-lede { max-width: min(32rem, 38vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1.05rem, 1.4vw, 1.55rem); line-height: 1.45; text-shadow: var(--halo-green); }
+.hero-lede { max-width: min(32rem, 38vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1.05rem, 1.4vw, 1.55rem); line-height: 1.45; text-shadow: var(--halo-lede); }
 .hero-scroll { display: none; position: absolute; z-index: 30; right: var(--gutter); bottom: 2rem; align-items: center; gap: 1rem; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 .hero-scroll i { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--border-inverse); border-radius: 50%; }
 .hero-scroll svg { width: 1.2rem; height: 1.2rem; }
