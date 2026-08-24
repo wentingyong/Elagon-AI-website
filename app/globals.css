@@ -208,7 +208,7 @@ html.lenis, html.lenis body { height: auto; }
 /* ——— Where we work: pinned frame stage (components/where/whereSequence.ts) ——— */
 /* overlaps the rail's pinned stage by 2px — same fractional-pixel hairline fix as .selected-work */
 .where-work { position: relative; z-index: 1; margin-top: -2px; background: var(--brand-cream); }
-.wf-stage { --wf-ratio: 1.48857; --wf-base: 1.06; --wf-minh: 40rem; --wf-rail: 22%; --wb: min(32lvh, 22vw); --wb-step: calc(var(--wb) * 1.025); --wf-pad: clamp(1rem, 1.4vw, 1.7rem); position: relative; height: 100lvh; min-height: var(--wf-minh); overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; }
+.wf-stage { --wf-ratio: 1.48857; --wf-base: 1.06; --wf-minh: 40rem; --wf-rail: 22%; --wb: min(32lvh, 26vw); --wb-step: calc(var(--wb) * 1.025); --wb-t: min(var(--wb), var(--wb-h, var(--wb))); --wf-pad: calc(var(--wb-t) * .075); position: relative; height: 100lvh; min-height: var(--wf-minh); overflow: hidden; background: var(--brand-cream); color: var(--ink-primary); isolation: isolate; }
 .wf-plane { position: absolute; inset: 0; }
 /* will-change only while the stage is pinned — this is the page's third pinned stage (§8 risk 5) */
 .wf-stage.is-live .wf-move { will-change: transform; }
@@ -250,7 +250,7 @@ html.lenis, html.lenis body { height: auto; }
    14% climb brings it fully into view as it flips, leaving block 1 flush with the top. */
 /* each box carries its own perspective: the stage-level one cannot reach through the
    transformed .wf-boxes plane (its default transform-style flattens descendants) */
-.wf-box { position: absolute; left: var(--wf-rail); width: var(--wb); height: var(--wb); perspective: 1200px; }
+.wf-box { position: absolute; left: var(--wf-rail); width: var(--wb); height: var(--wb-h, var(--wb)); perspective: 1200px; }
 [data-wb="1"] { top: 13.5%; }
 [data-wb="2"] { left: calc(var(--wf-rail) + var(--wb-step)); top: calc(13.5% + var(--wb-step)); }
 [data-wb="3"] { top: calc(13.5% + var(--wb-step) * 2); }
@@ -259,13 +259,19 @@ html.lenis, html.lenis body { height: auto; }
 /* the scrubbed flip chain writes rotationY HERE (whereSequence), never on .wf-box-card, which
    the hover flip above owns — two nested rotors, one writer each */
 .wf-card-rot { position: absolute; inset: 0; transform-style: preserve-3d; }
-.wf-face { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: var(--wf-pad); backface-visibility: hidden; background: var(--brand-rust); color: var(--brand-cream); }
-.wf-back { transform: rotateY(180deg); justify-content: center; }
-.wf-num { position: absolute; left: var(--wf-pad); top: var(--wf-pad); font-size: .8rem; letter-spacing: .18em; }
-.wf-box h3 { margin: 0; font-family: var(--font-editorial); font-size: clamp(1.3rem, 2vw, 2.2rem); font-weight: 400; line-height: 1; letter-spacing: -.03em; text-wrap: unset; }
-.wf-back p { margin: 0; font-size: clamp(.85rem, 1vw, 1.05rem); line-height: 1.45; }
-/* block 3 is cropped by the stage bottom, so its flipped detail rides the VISIBLE upper half */
-[data-wb="3"] .wf-back { justify-content: flex-start; padding-top: calc(var(--wf-pad) + 2.2rem); }
+/* Both faces bottom-align, so the title lands in exactly the same place whichever is showing:
+   flipping reads as the detail rising ABOVE a title that never moves. */
+.wf-face { position: absolute; inset: 0; display: flex; flex-direction: column; gap: calc(var(--wb-t) * .045); padding: var(--wf-pad); backface-visibility: hidden; background: var(--brand-rust); color: var(--brand-cream); }
+.wf-back { transform: rotateY(180deg); }
+/* Type is a fraction of the block, not of the viewport. A clamp() floor cannot know how big the
+   block ended up, so at 22vw the block collapsed to ~177px while the type stayed at its floor
+   and the detail spilled out of the card. These ratios hold the worst case — the 109-character
+   detail plus a two-line title — inside a square block at every size. */
+/* in the flow, not absolute: the auto margin holds it at the top AND absorbs the slack, so on a
+   short card the detail pushes down the block instead of sliding underneath a fixed marker */
+.wf-num { margin-bottom: auto; font-size: max(.62rem, calc(var(--wb-t) * .05)); letter-spacing: .18em; }
+.wf-box h3 { margin: 0; font-family: var(--font-editorial); font-size: max(1.1rem, calc(var(--wb-t) * .108)); font-weight: 400; line-height: 1; letter-spacing: -.03em; text-wrap: unset; }
+.wf-back p { margin: 0; font-size: max(.75rem, calc(var(--wb-t) * .056)); line-height: 1.35; }
 /* closing beat: keeps the section's left rail rather than centring, so the eyebrow, headline,
    staircase and statement all sit on one axis */
 .wf-close { position: absolute; left: var(--wf-rail); top: 32%; width: 40%; max-width: 38rem; }
@@ -291,28 +297,40 @@ html.lenis, html.lenis body { height: auto; }
 /* ——— the small-screen stage: portrait plate, same script, same beats. The opening is a tall
    slot left of the columns, so the staircase becomes a vertical cascade with an alternating
    indent rather than a diagonal. Copy and blocks sit in the band the alpha scan proves clear
-   (plate x .09–.66 across y .37–.62). Gated on width + orientation, the two things the iOS
-   toolbar cannot change mid-scroll — see WHERE_QUERY_SMALL. */
-@media (max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: no-preference) {
-  .wf-stage { --wf-ratio: .52083; --wf-rail: 6%; --wb: min(52vw, 30lvh); --wb-step: 0; --wf-pad: clamp(.9rem, 3.6vw, 1.4rem); --wf-minh: 34rem; }
+   (plate x .09–.66 across y .37–.62). Two clauses: phones by width + orientation, which the iOS
+   toolbar cannot change mid-scroll, and 768–1023px by aspect so a tall narrow window still gets
+   the portrait cut instead of a staircase squeezed into a quarter of it — see WHERE_QUERY_SMALL. */
+@media (max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: no-preference),
+       (min-width: 768px) and (max-width: 1023px) and (max-aspect-ratio: 5 / 8) and (prefers-reduced-motion: no-preference) {
+  .wf-stage { --wf-ratio: .52083; --wf-rail: 6%; --wb: 58vw; --wb-h: 28lvh; --wb-step: 0; --wf-minh: 34rem; }
   .wf-eyebrow { left: 8%; top: 5%; }
   /* sits low on purpose: higher up the canopy's fringe reaches in to plate x .20 and eats the
      first characters of every line. Left is the page gutter, not a percentage — 3% was 11px on
-     a 375px screen, inside the 16px gutter, which is what made the headline look clipped. */
-  .wf-copy { left: var(--gutter); top: 36%; width: calc(72% - var(--gutter)); max-width: none; }
+     a 375px screen, inside the 16px gutter, which is what made the headline look clipped.
+     Width stops short of the clear band's right edge (plate x .66) instead of filling it, so
+     the measure does not run into the columns and the rag stays even. */
+  .wf-copy { left: var(--gutter); top: 36%; width: calc(62% - var(--gutter)); max-width: none; }
   .wf-copy h2 { margin-bottom: 1rem; font-size: clamp(1.5rem, 6.6vw, 2.3rem); line-height: 1; }
   .wf-lede { max-width: none; font-size: clamp(.9rem, 3.6vw, 1.05rem); }
-  /* vertical cascade: block 2 indents to echo the desktop checkerboard without needing width */
-  .wf-box { width: var(--wb); height: var(--wb); }
-  [data-wb="1"] { left: 6%; top: 12%; }
-  [data-wb="2"] { left: 18%; top: 42%; }
-  [data-wb="3"] { left: 6%; top: 72%; }
-  .wf-box h3 { font-size: clamp(1rem, 4.8vw, 1.5rem); }
-  .wf-back p { font-size: clamp(.76rem, 3.5vw, .95rem); }
-  [data-wb="3"] .wf-back { justify-content: center; padding-top: var(--wf-pad); }
-  .wf-close { left: 5%; top: 34%; width: 66%; max-width: none; }
+  /* vertical cascade: block 2 indents to echo the desktop checkerboard without needing width.
+     Width and height come apart here — the base rule reads --wb-h — because a square would
+     either waste the width a phone has or overlap its neighbours on a short one. */
+  /* Laid out against BOXES_LIFT like the wide staircase: the shared script climbs .wf-boxes by
+     14% as block 3 lands, so these tops are 14% lower than where the blocks finally sit. That
+     puts block 1 flush with the stage top and block 3 fully on screen — which matters more now
+     that the title lives on the back face, where a cropped block would cut it off. */
+  [data-wb="1"] { left: 6%; top: 19%; }
+  [data-wb="2"] { left: 18%; top: 49%; }
+  [data-wb="3"] { left: 6%; top: 79%; }
+  /* blocks in FRONT of the plate here, unlike the wide branch. The plate is the section's
+     foreground by design, but at this size the blocks fill most of the stage and the canopy
+     was falling across block 1's detail — readability wins over the overlap on a phone. */
+  .wf-boxes { z-index: 4; }
+  .wf-close { left: var(--gutter); top: 34%; width: calc(62% - var(--gutter)); max-width: none; }
   .wf-close p { font-size: clamp(1.3rem, 5.6vw, 2rem); }
-  .wf-close .primary-cta { margin-top: 1.8rem; }
+  /* the narrowed measure is for the statement, not the pill — nowrap lets it size to its own
+     label instead of breaking "Explore Services" across two lines */
+  .wf-close .primary-cta { margin-top: 1.8rem; white-space: nowrap; }
   .wf-handoff { height: 10%; }
 }
 
@@ -341,8 +359,9 @@ html.lenis, html.lenis body { height: auto; }
   .wf-card-rot { position: static; transform: none !important; transform-style: flat; }
   .wf-face { position: static; display: block; padding: clamp(1.4rem, 5vw, 2.2rem); backface-visibility: visible; }
   .wf-front { padding-bottom: 0; }
-  .wf-back, [data-wb="3"] .wf-back { padding-top: .9rem; transform: none; }
-  .wf-back .wf-num { display: none; } /* the front face already carries it */
+  .wf-back { padding-top: .9rem; transform: none; }
+  /* both faces are flattened into one block here, so the back's repeats are duplicates */
+  .wf-back .wf-num, .wf-back h3 { display: none; }
   .wf-num { position: static; display: block; margin-bottom: clamp(2rem, 7vw, 3rem); }
   .wf-box h3 { font-size: clamp(1.5rem, 6vw, 2.1rem); }
   .wf-back p { font-size: 1rem; }

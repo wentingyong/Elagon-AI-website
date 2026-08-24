@@ -163,8 +163,13 @@ export function WhereScroll() {
         };
       };
 
-      matcher.add(WHERE_QUERY, build(PLATE.wide));
-      matcher.add(WHERE_QUERY_SMALL, build(PLATE.small));
+      /* One context, two named conditions, rather than two separate add() calls: a viewport that
+         satisfied both (exactly 5/8) would otherwise build two timelines on one stage. Reading
+         `small` first makes the tie resolve the same way the CSS does by source order. */
+      matcher.add({ small: WHERE_QUERY_SMALL, wide: WHERE_QUERY }, (context) => {
+        const small = Boolean((context as { conditions?: Record<string, boolean> }).conditions?.small);
+        return build(small ? PLATE.small : PLATE.wide)();
+      });
     });
 
     return () => {
@@ -188,7 +193,10 @@ export function WhereScroll() {
               <div className="wf-box-card">
                 <div className="wf-card-rot">
                   <div className="wf-face wf-front"><span className="wf-num" aria-hidden="true">{item.number}</span><h3>{item.title}</h3></div>
-                  <div className="wf-face wf-back"><span className="wf-num" aria-hidden="true">{item.number}</span><p>{item.detail}</p></div>
+                  {/* the title repeats on the back and sits in the same place as on the front,
+                      so the flip reads as the detail rising above a fixed title rather than as
+                      two unrelated faces. aria-hidden: the front's h3 already names the link. */}
+                  <div className="wf-face wf-back"><span className="wf-num" aria-hidden="true">{item.number}</span><p>{item.detail}</p><h3 aria-hidden="true">{item.title}</h3></div>
                 </div>
               </div>
             </Link>
