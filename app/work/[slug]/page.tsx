@@ -6,13 +6,15 @@ import { SystemDiagram } from "@/components/SystemDiagram";
 import { CaseArtwork } from "@/components/work/CaseArtwork";
 import { CaseHeroArt } from "@/components/work/CaseHeroArt";
 import { cases } from "@/content/site";
+import { buildMetadata, getCaseSeo } from "@/lib/seo";
 
 export function generateStaticParams() { return cases.map((item) => ({ slug: item.slug })); }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const item = cases.find((entry) => entry.slug === slug);
-  return item ? { title: item.title, description: item.summary } : {};
+  const seo = getCaseSeo(slug);
+  return item && seo ? buildMetadata(seo) : {};
 }
 
 export default async function CasePage({ params }: { params: Promise<{ slug: string }> }) {

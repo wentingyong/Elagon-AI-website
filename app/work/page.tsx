@@ -2,8 +2,9 @@ import Link from "next/link";
 import { ArrowIcon } from "@/components/ArrowIcon";
 import { FinalCTA, PageHero, SectionIntro } from "@/components/Editorial";
 import { cases, secondaryProof } from "@/content/site";
+import { buildMetadata, seoCopy } from "@/lib/seo";
 
-export const metadata = { title: "Selected Work", description: "Production AI systems measured in operating results, with human control and clear evidence." };
+export const metadata = buildMetadata(seoCopy.work);
 
 export default function WorkPage() {
   return (

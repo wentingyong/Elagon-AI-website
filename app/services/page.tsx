@@ -1,8 +1,9 @@
 import { CaseCard } from "@/components/CaseCard";
 import { FinalCTA, PageHero, SectionIntro } from "@/components/Editorial";
 import { cases, fitSignals, operatingModes, services } from "@/content/site";
+import { buildMetadata, seoCopy } from "@/lib/seo";
 
-export const metadata = { title: "Services", description: "Start with one material workflow, prove the path, then put a complete AI system into production." };
+export const metadata = buildMetadata(seoCopy.services);
 
 export default function ServicesPage() {
   return (
