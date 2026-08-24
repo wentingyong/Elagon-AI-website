@@ -11,20 +11,33 @@
 export const WHERE_TRAVEL_VH = 300; // the flip chain needs room to read: ~20vh of scroll per 180° turn
 
 /** Two pinned branches running the SAME script over a different plate. The split is purely
- *  WIDTH + ORIENTATION. The portrait cut is 0.52:1, so it only suits a phone held upright;
- *  anything squarer, tablet portrait included, crops a third of its height away and loses both
- *  the canopy and the pedestals. That used to be gated on aspect ratio (3/5), which iOS Safari
- *  CHANGES as the toolbar collapses — on a 375x553/375x667 iPhone the stage swapped plates
- *  mid-scroll and rebuilt the whole timeline. Width and orientation are the two things the
- *  toolbar cannot move, and they land on the same devices: phone-portrait small, phone-landscape
- *  and tablet-portrait wide. The wide query repeats the motion clause per branch rather than
+ *  The portrait cut is 0.52:1, so it only suits a tall, narrow viewport; anything squarer,
+ *  tablet portrait included, crops a third of its height away and loses both the canopy and
+ *  the pedestals. Two clauses, because neither axis works alone:
+ *
+ *    - phones: width + orientation. Aspect ratio cannot be used here — iOS Safari CHANGES it
+ *      as the toolbar collapses, and a 375x553 / 375x667 iPhone swapped plates mid-scroll and
+ *      rebuilt the whole timeline each time.
+ *    - 768-1023px: aspect, so a tall narrow window (e.g. 800x1400) still gets the portrait cut
+ *      rather than a staircase squeezed into 22vw. No tablet sits near 5/8 — an iPad portrait
+ *      is ~0.75 and its toolbar moves that by ~0.03 — so the toolbar cannot flip this one.
+ *
+ *  Anything 1024px and up is wide. The queries repeat the motion clause per branch rather than
  *  using `or`, which predates Safari 16.4. Only reduced motion falls through to the static
  *  stacked flow; touch is not excluded, since the flip chain is scrubbed and needs no pointer.
- *  Both queries must stay exactly complementary to the @media blocks in globals.css. */
-export const WHERE_QUERY =
-  "(min-width: 768px) and (prefers-reduced-motion: no-preference), (orientation: landscape) and (prefers-reduced-motion: no-preference)";
+ *  These must stay complementary to the @media blocks in globals.css. The one viewport that can
+ *  satisfy both — exactly 5/8 — is resolved to SMALL in both places: CSS by source order, and
+ *  WhereScroll by reading matchMedia's `small` condition first. */
+const MOTION = "(prefers-reduced-motion: no-preference)";
+
 export const WHERE_QUERY_SMALL =
-  "(max-width: 767px) and (orientation: portrait) and (prefers-reduced-motion: no-preference)";
+  `(max-width: 767px) and (orientation: portrait) and ${MOTION},` +
+  ` (min-width: 768px) and (max-width: 1023px) and (max-aspect-ratio: 5 / 8) and ${MOTION}`;
+
+export const WHERE_QUERY =
+  `(max-width: 767px) and (orientation: landscape) and ${MOTION},` +
+  ` (min-width: 768px) and (max-width: 1023px) and (min-aspect-ratio: 5 / 8) and ${MOTION},` +
+  ` (min-width: 1024px) and ${MOTION}`;
 
 /**
  * Plate geometry, one entry per branch. Both plates are opaque along the top and open at the
@@ -77,25 +90,24 @@ export const whereScript: WhereStep[] = [
   // the ground counter-drifts a third: parallax depth without a second plate
   { target: ".wf-ground", at: [0.13, 0.38], from: { yPercent: 0 }, to: { yPercent: -6 }, ease: "power2.inOut" },
 
-  // ——— the staircase narrative, one chained unit per block: appear → flip to the detail →
-  // flip back, the flip-back riding the SAME window as the next block's entrance. The flips
-  // are scrubbed (rotationY on the block's .wf-card-rot rotator, not on .wf-box-card, which
-  // the CSS hover flip owns) so the whole chain reverses with the scroll like everything else.
+  // ——— the staircase narrative, one chained unit per block: appear → flip to the detail, and
+  // STAY on the detail. The flip-backs are gone by design — each block holds what it turned
+  // over to, so by the closing beat all three read as detail at once. The flips are scrubbed
+  // (rotationY on the block's .wf-card-rot rotator, not on .wf-box-card, which the CSS hover
+  // flip owns) so the chain still reverses with the scroll like everything else, and hover
+  // still toggles a block back to its title because the two rotors compose.
   // opacity, NEVER autoAlpha: autoAlpha writes visibility:hidden, which would drop the section's
   // only links out of the tab order — a keyboard user would never reach them. Mouse reach is
   // gated by BOX_WINDOWS instead, so nothing invisible is ever clickable.
   { target: '[data-wb="1"]', at: [0.34, 0.4], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
   { target: '[data-wb="1"] .wf-card-rot', at: [0.42, 0.485], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
-  { target: '[data-wb="1"] .wf-card-rot', at: [0.51, 0.575], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
   { target: '[data-wb="2"]', at: [0.51, 0.575], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
   { target: '[data-wb="2"] .wf-card-rot', at: [0.595, 0.66], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
-  { target: '[data-wb="2"] .wf-card-rot', at: [0.685, 0.75], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
   { target: '[data-wb="3"]', at: [0.685, 0.75], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
   // ...and as block 3 arrives the whole staircase climbs, so 01 and 02 make room and block 3
   // clears the stage bottom in full. BOXES_LIFT is what the CSS box tops are laid out against.
   { target: ".wf-boxes", at: [0.685, 0.78], from: { yPercent: 0 }, to: { yPercent: -14 }, ease: "power2.inOut" },
   { target: '[data-wb="3"] .wf-card-rot', at: [0.77, 0.835], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
-  { target: '[data-wb="3"] .wf-card-rot', at: [0.855, 0.915], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
 
   // ——— the blocks leave upward one by one so the closing statement owns the opening
   { target: '[data-wb="1"]', at: [0.9, 0.945], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -56 }, ease: "power2.in" },

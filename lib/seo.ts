@@ -5,11 +5,35 @@ const DEFAULT_SITE_URL = "https://elagon.ai";
 export const SITE_NAME = "Elagon";
 export const SITE_LOCALE = "en_CA";
 export const SITE_LANGUAGE = "en-CA";
-export const SITE_URL = new URL(
-  process.env.NEXT_PUBLIC_SITE_URL?.trim() || DEFAULT_SITE_URL,
-).origin;
 
-export const SOCIAL_IMAGE_PATH = "/brand/FB.png";
+/**
+ * Every canonical, og:url and og:image is built from this, so it has to name a host that
+ * actually serves this site. Hard-coding elagon.ai broke that: the domain currently belongs to
+ * the previous Elagon site, so https://elagon.ai/brand/<card> returned 404 and every scraper
+ * fell back to whatever image it could find on the page — the hero plate.
+ *
+ * Resolution order:
+ *   1. NEXT_PUBLIC_SITE_URL  — explicit override, always wins
+ *   2. VERCEL_PROJECT_PRODUCTION_URL — this project's own production domain. Today that is the
+ *      .vercel.app host; the day elagon.ai is attached to THIS project it becomes elagon.ai,
+ *      with no code change. Server-only, which is fine: seo.ts is imported by metadata,
+ *      robots.ts and sitemap.ts, never by a client component.
+ *   3. DEFAULT_SITE_URL — local dev.
+ */
+const resolveSiteUrl = () => {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit;
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercel) return `https://${vercel}`;
+  return DEFAULT_SITE_URL;
+};
+
+export const SITE_URL = new URL(resolveSiteUrl()).origin;
+
+/** 1200x630 JPEG, ~237KB. Not the 1.5MB PNG master: WhatsApp will not fetch a preview over
+ *  ~600KB, and every other scraper is slower for no visible gain at card size. */
+export const SOCIAL_IMAGE_PATH = "/brand/meta.jpg";
+export const SOCIAL_IMAGE_TYPE = "image/jpeg";
 export const SOCIAL_IMAGE_ALT = "Elagon — AI that works. Value that lasts.";
 
 export const seoCopy = {
@@ -115,7 +139,7 @@ export function buildMetadata({
           width: 1200,
           height: 630,
           alt: SOCIAL_IMAGE_ALT,
-          type: "image/png",
+          type: SOCIAL_IMAGE_TYPE,
         },
       ],
     },
