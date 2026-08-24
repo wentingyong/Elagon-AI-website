@@ -45,6 +45,11 @@ const PLATES = [
   ["servies/4-A.png", "cta/cta-frame.webp"], // home final-CTA background (Editorial.tsx) — goes through next/image
 ];
 
+/** The social card. Source is the 1200x630 master export; the shipped file is JPEG because
+ *  WhatsApp will not fetch a link preview over ~600KB and the 1.5MB PNG bought nothing at card
+ *  size (q90 measures 35.4dB and holds the headline's edges). lib/seo.ts SOCIAL_IMAGE_PATH. */
+const SOCIAL_CARD = ["brand/meta.png", "brand/meta.jpg"];
+
 let total = 0;
 
 for (const [src, out, opts = {}] of LAYERS) {
@@ -80,6 +85,15 @@ for (const [src, out, opts = {}] of PLATES) {
   };
   await emit(out, await sharp(path.join(PUBLIC_DIR, src)).webp({ quality: QUALITY, effort: 6, alphaQuality: 100 }).toBuffer());
   if (opts.avif) await emit(out.replace(/\.webp$/, ".avif"), await sharp(path.join(PUBLIC_DIR, src)).avif({ quality: 58, effort: 5 }).toBuffer());
+}
+
+{
+  const [src, out] = SOCIAL_CARD;
+  const buffer = await sharp(path.join(PUBLIC_DIR, src)).removeAlpha().jpeg({ quality: 90, mozjpeg: true }).toBuffer();
+  await writeFile(path.join(PUBLIC_DIR, out), buffer);
+  total += buffer.length;
+  const { width, height } = await sharp(buffer).metadata();
+  console.log(`${out}  ${(buffer.length / 1024).toFixed(0)}KB  ${width}x${height}`);
 }
 
 console.log(`total ${(total / 1024 / 1024).toFixed(2)}MB`);
