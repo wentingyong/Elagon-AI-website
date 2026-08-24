@@ -30,7 +30,10 @@ const COMPOSITES = [
 
 /** Single plates that live outside public/hero. Source dir keeps the delivered name; the
  *  shipped URL gets the convention one (the source folder is misspelled `servies`). */
-const PLATES = [["servies/3-A.png", "where/where-frame.webp"]];
+const PLATES = [
+  ["servies/3-A.png", "where/where-frame.webp"],
+  ["servies/3-A-small.png", "where/where-frame-small.webp"], // portrait plate for the small-screen stage
+];
 
 let total = 0;
 

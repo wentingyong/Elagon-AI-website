@@ -8,29 +8,38 @@
  * the closing statement inside the opening.
  */
 
-export const WHERE_TRAVEL_VH = 200; // hero is 300; this stage has one camera move, not two scenes
-/** The pinned branch. Below 900px, squarer than 5:4, touch, or reduced motion → stacked flow.
- *  Must stay exactly complementary to the stacked @media query in globals.css. */
-export const WHERE_QUERY =
-  "(min-width: 900px) and (min-aspect-ratio: 5 / 4) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)";
+export const WHERE_TRAVEL_VH = 300; // the flip chain needs room to read: ~20vh of scroll per 180° turn
 
-export const WHERE_ASSETS = { frame: "/where/where-frame.webp" } as const;
+/** Two pinned branches running the SAME script over a different plate — wide and landscape
+ *  gets the 1432x962 plate, everything narrower or taller gets the portrait 451x866 cut.
+ *  Only reduced motion falls through to the static stacked flow. Touch is no longer excluded:
+ *  the flip chain is scrubbed, so it plays without a pointer. All three queries must stay
+ *  exactly complementary to the @media blocks in globals.css. */
+export const WHERE_QUERY =
+  "(min-width: 900px) and (min-aspect-ratio: 5 / 4) and (prefers-reduced-motion: no-preference)";
+export const WHERE_QUERY_SMALL =
+  "(max-width: 899px) and (prefers-reduced-motion: no-preference), (max-aspect-ratio: 5 / 4) and (prefers-reduced-motion: no-preference)";
 
 /**
- * Frame plane geometry. The plate is zero-bleed on top/left/right and OPEN at the bottom
- * (465 of 1432px transparent in the last row). Scene 2 is a BOTTOM-ANCHORED frame: the pan
- * lands the plate's bottom edge on the stage bottom, so the opaque bottom corners (left wall,
- * right columns and urn) terminate on the edge exactly like the still, and the transparent
- * bottom region shows the cream ground with no hard edge. Only top/left/right remain
- * no-expose edges — the downward pan only ever helps them.
+ * Plate geometry, one entry per branch. Both plates are opaque along the top and open at the
+ * bottom, and scene 2 is a BOTTOM-ANCHORED frame in both: the pan lands the plate's bottom edge
+ * on the stage bottom, so the pedestals and urn terminate on the edge and the transparent
+ * bottom shows the cream ground with no hard seam. Only the top (and, on the wide plate, the
+ * sides) are no-expose edges, and the downward pan only ever helps them.
  *
- * CAUTION: `base` must stay in lockstep with --wf-base in globals.css.
+ * `dolly` is what clears the canopy off the top: the portrait cut needs a much stronger push
+ * than the wide one because its canopy band is proportionally deeper.
+ *
+ * CAUTION: each `ratio`/`base` must stay in lockstep with --wf-ratio/--wf-base in globals.css.
  */
+export const PLATE = {
+  wide: { src: "/where/where-frame.webp", ratio: 1432 / 962, base: 1.06, dolly: 1.12, w: 1432, h: 962 },
+  small: { src: "/where/where-frame-small.webp", ratio: 451 / 866, base: 1.06, dolly: 1.18, w: 451, h: 866 },
+} as const;
+export type Plate = (typeof PLATE)[keyof typeof PLATE];
+
 export const FRAME = {
-  ratio: 1432 / 962, // 1.48857
-  base: 1.06, // === --wf-base
   idle: 1.02, // the slow breath across the idle beat
-  dolly: 1.12, // scale at the end of the camera move — the still's scene 2 is barely more zoomed; the drama is the pan
   overshoot: 1, // % of stage height the bottom edge tucks past the stage bottom (rounding guard)
 } as const;
 
@@ -51,19 +60,16 @@ export type WhereStep = {
  * idle.to must equal dolly.from or the scrub strands at the seam.
  */
 export const whereScript: WhereStep[] = [
-  // ——— idle (0–0.12): a slow breath so the stage never reads as a flat still
-  { target: '[data-wf="frame"]', at: [0, 0.12], from: { scale: 1 }, to: { scale: 1.02 }, ease: "none" },
+  // ——— idle (0–0.08): a slow breath so the stage never reads as a flat still
+  { target: '[data-wf="frame"]', at: [0, 0.08], from: { scale: 1 }, to: { scale: 1.02 }, ease: "none" },
 
-  // ——— camera (0.18–0.48): dolly in and pan down together, landing on the bottom anchor.
-  // The pan's yPercent here is NOMINAL — WhereScroll resolves it to panToBottomPct() per
-  // refresh, so the plate's bottom edge lands exactly on the stage bottom at every viewport.
-  { target: '[data-wf="frame"]', at: [0.18, 0.48], from: { scale: 1.02 }, to: { scale: 1.12 }, ease: "power2.inOut" },
-  { target: '[data-wf="frame"]', at: [0.18, 0.48], from: { yPercent: 0 }, to: { yPercent: -27 }, ease: "power2.inOut" },
-  // the staircase is sized to clear the stage on its own, so it does NOT ride the -18 tilt —
-  // it only drifts, which keeps the plane alive against the frame without breaking the fit
-  { target: ".wf-boxes", at: [0.42, 0.8], from: { yPercent: 0 }, to: { yPercent: -4 }, ease: "none" },
+  // ——— camera (0.13–0.38): dolly in and pan down together, landing on the bottom anchor.
+  // Both values are NOMINAL — WhereScroll swaps in the active plate's dolly and resolves the
+  // pan per refresh, so the plate's bottom edge lands on the stage bottom at every viewport.
+  { target: '[data-wf="frame"]', at: [0.13, 0.38], from: { scale: 1.02 }, to: { scale: 1.12 }, ease: "power2.inOut" },
+  { target: '[data-wf="frame"]', at: [0.13, 0.38], from: { yPercent: 0 }, to: { yPercent: -27 }, ease: "power2.inOut" },
   // the ground counter-drifts a third: parallax depth without a second plate
-  { target: ".wf-ground", at: [0.18, 0.48], from: { yPercent: 0 }, to: { yPercent: -6 }, ease: "power2.inOut" },
+  { target: ".wf-ground", at: [0.13, 0.38], from: { yPercent: 0 }, to: { yPercent: -6 }, ease: "power2.inOut" },
 
   // ——— the staircase narrative, one chained unit per block: appear → flip to the detail →
   // flip back, the flip-back riding the SAME window as the next block's entrance. The flips
@@ -72,45 +78,53 @@ export const whereScript: WhereStep[] = [
   // opacity, NEVER autoAlpha: autoAlpha writes visibility:hidden, which would drop the section's
   // only links out of the tab order — a keyboard user would never reach them. Mouse reach is
   // gated by BOX_WINDOWS instead, so nothing invisible is ever clickable.
-  { target: '[data-wb="1"]', at: [0.4, 0.45], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
-  { target: '[data-wb="1"] .wf-card-rot', at: [0.455, 0.5], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
-  { target: '[data-wb="1"] .wf-card-rot', at: [0.54, 0.585], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
-  { target: '[data-wb="2"]', at: [0.54, 0.585], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
-  { target: '[data-wb="2"] .wf-card-rot', at: [0.595, 0.64], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
-  { target: '[data-wb="2"] .wf-card-rot', at: [0.68, 0.725], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
-  { target: '[data-wb="3"]', at: [0.68, 0.725], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
-  { target: '[data-wb="3"] .wf-card-rot', at: [0.735, 0.78], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
-  { target: '[data-wb="3"] .wf-card-rot', at: [0.8, 0.845], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
+  { target: '[data-wb="1"]', at: [0.34, 0.4], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
+  { target: '[data-wb="1"] .wf-card-rot', at: [0.42, 0.485], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
+  { target: '[data-wb="1"] .wf-card-rot', at: [0.51, 0.575], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
+  { target: '[data-wb="2"]', at: [0.51, 0.575], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
+  { target: '[data-wb="2"] .wf-card-rot', at: [0.595, 0.66], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
+  { target: '[data-wb="2"] .wf-card-rot', at: [0.685, 0.75], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
+  { target: '[data-wb="3"]', at: [0.685, 0.75], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
+  // ...and as block 3 arrives the whole staircase climbs, so 01 and 02 make room and block 3
+  // clears the stage bottom in full. BOXES_LIFT is what the CSS box tops are laid out against.
+  { target: ".wf-boxes", at: [0.685, 0.78], from: { yPercent: 0 }, to: { yPercent: -14 }, ease: "power2.inOut" },
+  { target: '[data-wb="3"] .wf-card-rot', at: [0.77, 0.835], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
+  { target: '[data-wb="3"] .wf-card-rot', at: [0.855, 0.915], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
 
   // ——— the blocks leave upward one by one so the closing statement owns the opening
-  { target: '[data-wb="1"]', at: [0.855, 0.895], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
-  { target: '[data-wb="2"]', at: [0.87, 0.91], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
-  { target: '[data-wb="3"]', at: [0.885, 0.925], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
+  { target: '[data-wb="1"]', at: [0.9, 0.945], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -56 }, ease: "power2.in" },
+  { target: '[data-wb="2"]', at: [0.915, 0.96], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -56 }, ease: "power2.in" },
+  { target: '[data-wb="3"]', at: [0.93, 0.975], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -56 }, ease: "power2.in" },
 
   // ——— closing beat: the pill settles as the last word lands (word stagger built in WhereScroll)
-  { target: ".wf-close .primary-cta", at: [0.94, 0.99], from: { opacity: 0, y: 20 }, to: { opacity: 1, y: 0 }, ease: "power2.out" },
+  { target: ".wf-close .primary-cta", at: [0.955, 0.995], from: { opacity: 0, y: 20 }, to: { opacity: 1, y: 0 }, ease: "power2.out" },
 
   // ——— handoff into the next section (mirrors .hs-handoff)
-  { target: ".wf-handoff", at: [0.9, 1], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
+  { target: ".wf-handoff", at: [0.94, 1], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
 ];
 
-/** Where each block has finished its whole unit (entered, flipped, flipped back) — the focusin
- *  scroll target. Deliberately AFTER the flip-back: the focus-visible CSS flip composes with the
- *  scrubbed rotator, so focus must land where the rotator is back at 0 or the two cancel out. */
-export const BOX_SETTLE = [0.6, 0.74, 0.85] as const;
+/** How far the staircase climbs when block 3 arrives, as a % of stage height. The CSS box tops
+ *  are laid out so that AFTER this lift block 3 clears the bottom and block 1 sits flush with
+ *  the top — change one and re-check the other. */
+export const BOXES_LIFT = 14;
+
+/** Where each block has just finished entering, front face up — the focusin scroll target.
+ *  Deliberately a point where the rotator reads 0: the focus-visible CSS flip composes with the
+ *  scrubbed rotator, so focus must land where the rotator is at rest or the two cancel out. */
+export const BOX_SETTLE = [0.41, 0.585, 0.762] as const;
 /** p windows in which a block is actually on screen, and therefore mouse-reachable. The blocks
  *  stay tabbable outside these (see the opacity note above) — focusin brings the pin to them. */
-export const BOX_WINDOWS = [[0.4, 0.895], [0.54, 0.91], [0.68, 0.925]] as const;
+export const BOX_WINDOWS = [[0.34, 0.945], [0.51, 0.96], [0.685, 0.975]] as const;
 /** Where the closing pill becomes readable — its mouse gate, and the focusin target. */
-export const CLOSE_SETTLE = 0.98;
-export const CLOSE_OPEN = 0.92;
+export const CLOSE_SETTLE = 0.99;
+export const CLOSE_OPEN = 0.95;
 
 /** The scene-2 pan target, as a yPercent of the stage box: the travel that moves the plate's
  *  bottom edge from its centered rest position onto the stage bottom at the fully-dollied
  *  scale, plus the overshoot. Negative (upward image travel === camera panning down). */
-export function panToBottomPct(stageW: number, stageH: number) {
+export function panToBottomPct(plate: Plate, stageW: number, stageH: number) {
   if (!stageW || !stageH) return -FRAME.overshoot;
-  const frameH = (Math.max(stageW, stageH * FRAME.ratio) * FRAME.base * FRAME.dolly) / FRAME.ratio;
+  const frameH = (Math.max(stageW, stageH * plate.ratio) * plate.base * plate.dolly) / plate.ratio;
   // + overshoot: pan slightly LESS than exact alignment, so the edge tucks below the stage
   // bottom and crops invisibly — panning past it would drag a hard edge into view instead
   return -((frameH / stageH - 1) / 2) * 100 + FRAME.overshoot;

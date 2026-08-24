@@ -1,17 +1,19 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useLayoutEffect, useRef } from "react";
 import { PrimaryCTA } from "@/components/PrimaryCTA";
 import {
   BOX_SETTLE,
+  FRAME,
   BOX_WINDOWS,
   CLOSE_OPEN,
   CLOSE_SETTLE,
   panToBottomPct,
-  WHERE_ASSETS,
+  PLATE,
+  type Plate,
   WHERE_QUERY,
+  WHERE_QUERY_SMALL,
   WHERE_TRAVEL_VH,
   whereScript,
 } from "@/components/where/whereSequence";
@@ -50,14 +52,18 @@ export function WhereScroll() {
       const matcher = gsap.matchMedia();
       mm = matcher;
 
-      matcher.add(WHERE_QUERY, () => {
-        // the frame pan's yPercent is re-resolved on every refresh so the plate's bottom edge
-        // lands exactly on the stage bottom (whereSequence: scene 2 is bottom-anchored). Other
-        // planes keep their static drift values.
+      // one builder, two branches: the script and every p value are shared, only the plate
+      // geometry (and the CSS skin around it) differs between the wide and portrait cuts
+      const build = (plate: Plate) => () => {
+        // the frame's pan and dolly both come from the active plate: the pan is re-resolved on
+        // every refresh so the plate's bottom edge lands exactly on the stage bottom
+        // (whereSequence: scene 2 is bottom-anchored). Other planes keep their static values.
         const fit = (target: string, vars: Record<string, number>): Record<string, unknown> => {
-          const travel = vars.yPercent;
-          if (travel === undefined || target !== '[data-wf="frame"]') return vars;
-          return { ...vars, yPercent: travel === 0 ? 0 : () => panToBottomPct(stage.clientWidth, stage.clientHeight) };
+          if (target !== '[data-wf="frame"]') return vars;
+          const out: Record<string, unknown> = { ...vars };
+          if (vars.yPercent) out.yPercent = () => panToBottomPct(plate, stage.clientWidth, stage.clientHeight);
+          if (vars.scale && vars.scale > FRAME.idle) out.scale = plate.dolly;
+          return out;
         };
 
         const timeline = gsap.timeline({
@@ -108,10 +114,11 @@ export function WhereScroll() {
           ".wf-cl-word",
           { y: 26, autoAlpha: 0 },
           { y: 0, autoAlpha: 1, duration: 0.03, stagger: 0.005, ease: "power2.out", immediateRender: false },
-          0.9,
+          0.94,
         );
 
-        // idle-stage pointer parallax on the plate, fading out by p=0.12
+        // idle-stage pointer parallax on the plate, fading out by p=0.12 (mice only — on touch
+        // there is no pointermove to ride, and the scrub already carries the whole story)
         const inner = stage.querySelector<HTMLElement>('[data-wfp="frame"]');
         const drift = inner
           ? {
@@ -149,7 +156,10 @@ export function WhereScroll() {
             { clearProps: "all" },
           );
         };
-      });
+      };
+
+      matcher.add(WHERE_QUERY, build(PLATE.wide));
+      matcher.add(WHERE_QUERY_SMALL, build(PLATE.small));
     });
 
     return () => {
@@ -185,7 +195,13 @@ export function WhereScroll() {
               translate-based centring with GSAP never touching it */}
           <div className="wf-frame-shift" data-wfp="frame">
             <div className="wf-frame-inner">
-              <Image src={WHERE_ASSETS.frame} alt="" width={1432} height={962} sizes="(max-width: 899px) 200vw, 130vw" />
+              {/* genuine art direction — two different crops of the plate, not one image at two
+                  sizes — so this is <picture>/media rather than next/image's srcSet. The media
+                  string must stay identical to WHERE_QUERY. */}
+              <picture>
+                <source media="(min-width: 900px) and (min-aspect-ratio: 5 / 4)" srcSet={PLATE.wide.src} width={PLATE.wide.w} height={PLATE.wide.h} />
+                <img src={PLATE.small.src} alt="" width={PLATE.small.w} height={PLATE.small.h} loading="lazy" decoding="async" />
+              </picture>
             </div>
           </div>
         </div>
