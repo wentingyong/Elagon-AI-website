@@ -1,8 +1,9 @@
 import Image from "next/image";
 import { FinalCTA, PageHero, SectionIntro } from "@/components/Editorial";
 import { companyRoles, fitSignals, teamMembers } from "@/content/site";
+import { buildMetadata, seoCopy } from "@/lib/seo";
 
-export const metadata = { title: "Company", description: "Senior specialists accountable from the operating problem through production and ownership." };
+export const metadata = buildMetadata(seoCopy.company);
 
 const principles = [
   { title: "Value before technology", text: "Begin with the operating result, not a model, platform or demonstration." },

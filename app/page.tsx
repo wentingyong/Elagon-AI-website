@@ -6,6 +6,9 @@ import { CaseArtwork } from "@/components/work/CaseArtwork";
 import { SelectedWorkRail } from "@/components/work/SelectedWorkRail";
 import { WorkRailCard } from "@/components/work/WorkRailCard";
 import { cases, playbookSteps } from "@/content/site";
+import { buildMetadata, seoCopy } from "@/lib/seo";
+
+export const metadata = buildMetadata({ ...seoCopy.home, absoluteTitle: true });
 
 export default function Home() {
   return (

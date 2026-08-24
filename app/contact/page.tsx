@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ContactForm } from "@/components/ContactForm";
 import { SiteHeader } from "@/components/SiteHeader";
+import { buildMetadata, seoCopy } from "@/lib/seo";
 
-export const metadata = { title: "Contact", description: "Start a conversation with Elagon about a critical workflow." };
+export const metadata = buildMetadata(seoCopy.contact);
 
 export default function ContactPage() {
   return (

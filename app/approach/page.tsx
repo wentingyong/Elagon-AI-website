@@ -1,7 +1,8 @@
 import { FinalCTA, PageHero, SectionIntro } from "@/components/Editorial";
 import { playbookSteps, systemLayers } from "@/content/site";
+import { buildMetadata, seoCopy } from "@/lib/seo";
 
-export const metadata = { title: "The Elagon Playbook", description: "The operating method Elagon uses to move one material workflow from evidence to dependable production." };
+export const metadata = buildMetadata(seoCopy.approach);
 
 const standards = [
   { title: "Value is explicit", text: "Every system begins with a baseline, an accountable owner and a business result worth changing." },

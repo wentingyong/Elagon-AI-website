@@ -448,7 +448,9 @@ html.lenis, html.lenis body { height: auto; }
 .cta-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 2rem; }
 .cta-actions .primary-cta { margin-top: 0; }
 
-.site-footer { display: grid; grid-template-columns: 5fr 3fr 2fr; gap: 3rem; padding: 5rem var(--gutter) 2rem; background: var(--brand-rust); color: var(--brand-cream); }
+/* green-deep, per the palette's own note for the footer surface (design system 5.1). It also
+   steps down from the rust .final-cta above it, which the rust footer used to run straight into. */
+.site-footer { display: grid; grid-template-columns: 5fr 3fr 2fr; gap: 3rem; padding: 5rem var(--gutter) 2rem; background: var(--surface-inverse); color: var(--brand-cream); }
 .site-footer > p { font-size: .9rem; }
 .site-footer nav { display: grid; align-content: start; gap: .5rem; font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; }
 .footer-bottom { grid-column: 1 / -1; display: flex; justify-content: space-between; margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-inverse); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
