@@ -117,11 +117,10 @@ export function HeroScroll() {
 
       context = gsap.context(() => {
         // ——— one-shot intro, strictly sequential: AI → that works. → Value → that lasts. → lede.
-        // Clip-wipes, not opacity — the scrubbed exit owns --w-a on all of these (conflicting
-        // writers strand the scrub state), and element opacity would kill each word's lozenge.
-        // the wipe must not outlive the intro: clip-path creates a backdrop root, so leaving it
-        // on these nodes leaves each word's frosted lozenge with nothing to sample. The end
-        // state is inset(0), a visual no-op, so clearing it changes nothing on screen.
+        // Clip-wipes, not opacity — the scrubbed exit owns opacity/autoAlpha on all of these
+        // (conflicting writers strand the scrub state).
+        // the wipe must not outlive the intro — its end state is inset(0), a visual no-op, and a
+        // stale clip-path on these nodes only costs compositing
         const clearWipe = () =>
           gsap.set(".word-ai, .connector-works, .word-value, .connector-lasts, .hero-lede", { clearProps: "clipPath" });
         const intro = gsap.timeline({ defaults: { ease: "power3.out" }, onComplete: clearWipe });
@@ -166,16 +165,16 @@ export function HeroScroll() {
         // word-by-word headline exit in reading order, lede trailing last (§4, staggered-word-reveal)
         timeline.fromTo(
           [".word-ai", ".connector-works", ".word-value", ".connector-lasts", ".hero-lede"],
-          { y: 0, "--w-a": 1 },
-          { y: -60, "--w-a": 0, duration: 0.11, stagger: 0.0125, ease: "power2.in", immediateRender: false },
+          { y: 0, autoAlpha: 1 },
+          { y: -60, autoAlpha: 0, duration: 0.11, stagger: 0.0125, ease: "power2.in", immediateRender: false },
           0.15,
         );
 
         // interlude word-by-word reveal riding the sky dissolve
         timeline.fromTo(
           ".hs-il-word",
-          { y: 30, "--w-a": 0 },
-          { y: 0, "--w-a": 1, duration: 0.045, stagger: 0.014, ease: "power2.out", immediateRender: false },
+          { y: 30, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.045, stagger: 0.014, ease: "power2.out", immediateRender: false },
           0.44,
         );
 
@@ -183,8 +182,8 @@ export function HeroScroll() {
         // the longer copy starts as the arch settles so the last word lands at p=1
         timeline.fromTo(
           ".hs-word",
-          { y: 26, "--w-a": 0 },
-          { y: 0, "--w-a": 1, duration: 0.033, stagger: 0.0042, ease: "power2.out", immediateRender: false },
+          { y: 26, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: 0.033, stagger: 0.0042, ease: "power2.out", immediateRender: false },
           0.82,
         );
 
