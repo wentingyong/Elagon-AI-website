@@ -10,15 +10,17 @@
 
 export const WHERE_TRAVEL_VH = 300; // the flip chain needs room to read: ~20vh of scroll per 180° turn
 
-/** Two pinned branches running the SAME script over a different plate — wide and landscape
- *  gets the 1432x962 plate, everything narrower or taller gets the portrait 451x866 cut.
- *  Only reduced motion falls through to the static stacked flow. Touch is no longer excluded:
- *  the flip chain is scrubbed, so it plays without a pointer. All three queries must stay
- *  exactly complementary to the @media blocks in globals.css. */
+/** Two pinned branches running the SAME script over a different plate. The split is purely
+ *  ASPECT, matched to the plates' own shapes — never width. The portrait cut is 0.52:1, so it
+ *  only suits a viewport near that shape (a phone held upright); anything squarer, tablet
+ *  portrait included, crops a third of its height away and loses both the canopy and the
+ *  pedestals. 3/5 = 0.6 is the crossover. Only reduced motion falls through to the static
+ *  stacked flow; touch is not excluded, since the flip chain is scrubbed and needs no pointer.
+ *  Both queries must stay exactly complementary to the @media blocks in globals.css. */
 export const WHERE_QUERY =
-  "(min-width: 900px) and (min-aspect-ratio: 5 / 4) and (prefers-reduced-motion: no-preference)";
+  "(min-aspect-ratio: 3 / 5) and (prefers-reduced-motion: no-preference)";
 export const WHERE_QUERY_SMALL =
-  "(max-width: 899px) and (prefers-reduced-motion: no-preference), (max-aspect-ratio: 5 / 4) and (prefers-reduced-motion: no-preference)";
+  "(max-aspect-ratio: 3 / 5) and (prefers-reduced-motion: no-preference)";
 
 /**
  * Plate geometry, one entry per branch. Both plates are opaque along the top and open at the

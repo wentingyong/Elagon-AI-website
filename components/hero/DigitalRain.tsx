@@ -33,12 +33,14 @@ export function DigitalRain({ band, motionRef }: { band: "back" | "front"; motio
     if (!canvas || !ctx || !motion) return;
 
     const front = band === "front";
-    const spacing = front ? 22 : 28;
+    const spacing = front ? 26 : 32;
     const fontPx = front ? 18 : 13;
     const baseSpeed = front ? 170 : 110; // px/s
-    // gold-shifted from brand cream so the streaks read against both sky blue and cloud beige
-    const ink = front ? "rgba(232, 204, 132, 0.9)" : "rgba(214, 196, 148, 0.6)";
-    const headInk = front ? "rgba(248, 240, 214, 1)" : "rgba(238, 230, 206, 0.8)";
+    // gold-shifted from brand cream so the streaks read against both sky blue and cloud beige.
+    // Dialled well back: the rain should stitch the two scenes together at the edge of
+    // perception, not compete with the plate or the copy sitting on it.
+    const ink = front ? "rgba(232, 204, 132, 0.42)" : "rgba(214, 196, 148, 0.26)";
+    const headInk = front ? "rgba(248, 240, 214, 0.58)" : "rgba(238, 230, 206, 0.4)";
 
     let w = 0;
     let h = 0;

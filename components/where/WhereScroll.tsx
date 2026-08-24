@@ -199,7 +199,7 @@ export function WhereScroll() {
                   sizes — so this is <picture>/media rather than next/image's srcSet. The media
                   string must stay identical to WHERE_QUERY. */}
               <picture>
-                <source media="(min-width: 900px) and (min-aspect-ratio: 5 / 4)" srcSet={PLATE.wide.src} width={PLATE.wide.w} height={PLATE.wide.h} />
+                <source media="(min-aspect-ratio: 3 / 5)" srcSet={PLATE.wide.src} width={PLATE.wide.w} height={PLATE.wide.h} />
                 <img src={PLATE.small.src} alt="" width={PLATE.small.w} height={PLATE.small.h} loading="lazy" decoding="async" />
               </picture>
             </div>

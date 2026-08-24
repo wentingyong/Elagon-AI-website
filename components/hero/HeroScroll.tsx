@@ -33,10 +33,19 @@ export function SplitHeadline() {
           <span className="hero-connector connector-lasts" aria-hidden="true">{heroHeadline.connectorBottom}</span>
         </span>
       </h1>
-      <p className="hero-lede">{heroLede}</p>
+      <p className="hero-lede" aria-label={heroLede}>
+        <span aria-hidden="true">{words(heroLede, "hero-lede-word")}</span>
+      </p>
     </div>
   );
 }
+
+/** Word spans: every hero text block is split so each word can carry its own frosted lozenge.
+ *  The parent holds the real text as an aria-label and the spans are hidden from AT. */
+const words = (text: string, className: string) =>
+  text.split(" ").map((word, index) => (
+    <Fragment key={index}><span className={className}>{word}</span>{" "}</Fragment>
+  ));
 
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -67,7 +76,9 @@ function HeroStatic() {
           <span>{heroInterlude[0]}</span>
           <span>{heroInterlude[1]}</span>
         </h2>
-        <p className="hs-mission hs-mission-static">{heroMission}</p>
+        <p className="hs-mission hs-mission-static" aria-label={heroMission}>
+          <span aria-hidden="true">{words(heroMission, "hs-word")}</span>
+        </p>
       </div>
     </section>
   );
@@ -108,7 +119,11 @@ export function HeroScroll() {
         // ——— one-shot intro, strictly sequential: AI → that works. → Value → that lasts. → lede.
         // Clip-wipes, not opacity — the scrubbed exit owns opacity/autoAlpha on all of these
         // (conflicting writers strand the scrub state).
-        const intro = gsap.timeline({ defaults: { ease: "power3.out" } });
+        // the wipe must not outlive the intro — its end state is inset(0), a visual no-op, and a
+        // stale clip-path on these nodes only costs compositing
+        const clearWipe = () =>
+          gsap.set(".word-ai, .connector-works, .word-value, .connector-lasts, .hero-lede", { clearProps: "clipPath" });
+        const intro = gsap.timeline({ defaults: { ease: "power3.out" }, onComplete: clearWipe });
         intro
           .fromTo(stage, { opacity: 0 }, { opacity: 1, duration: 1, ease: "none" }, 0)
           .fromTo(".word-ai", { clipPath: "inset(100% 0 0 0)", y: 44 }, { clipPath: "inset(0% 0 0 0)", y: 0, duration: 0.85 }, 0.35)
@@ -133,7 +148,7 @@ export function HeroScroll() {
             refreshPriority: 3, // hero 3 > rail 2 > where 1 — three pins must refresh in document order
             onUpdate: (self) => {
               motion.p = self.progress;
-              if (self.progress > 0.05 && intro.isActive()) intro.progress(1);
+              if (self.progress > 0.05 && intro.isActive()) { intro.progress(1); clearWipe(); }
             },
           },
         });
@@ -267,7 +282,7 @@ export function HeroScroll() {
           <div className="hs-inner" data-hsp="s1-d"><Image src={HERO_ASSETS.s1Trees} alt="" fill loading="eager" sizes="100vw" /></div>
         </div>
         <div className="hs-layer hs-s2 hs-move" data-hs="s2-c">
-          <div className="hs-inner"><Image src={HERO_ASSETS.s2Arch} alt="" fill sizes="100vw" /></div>
+          <div className="hs-inner"><Image src={HERO_ASSETS.s2Arch} alt="" fill sizes="100vw" quality={90} /></div>
         </div>
         <div className="hs-vignette hs-s2" aria-hidden="true" />
       </div>
@@ -277,9 +292,7 @@ export function HeroScroll() {
       <h2 className="hs-interlude" aria-label={`${heroInterlude[0]} ${heroInterlude[1]}`}>
         {heroInterlude.map((line, lineIndex) => (
           <span key={lineIndex} className={`hs-il hs-il-${lineIndex + 1}`} aria-hidden="true">
-            {line.split(" ").map((word, index) => (
-              <Fragment key={index}><span className="hs-il-word">{word}</span>{" "}</Fragment>
-            ))}
+            {words(line, "hs-il-word")}
           </span>
         ))}
       </h2>
@@ -287,9 +300,7 @@ export function HeroScroll() {
       <div className="hs-mission">
         <p aria-label={heroMission}>
           <span aria-hidden="true">
-            {heroMission.split(" ").map((word, index) => (
-              <Fragment key={index}><span className="hs-word">{word}</span>{" "}</Fragment>
-            ))}
+            {words(heroMission, "hs-word")}
           </span>
         </p>
       </div>

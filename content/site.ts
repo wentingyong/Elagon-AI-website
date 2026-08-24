@@ -102,12 +102,12 @@ export const operatingModes = [
 ] as const;
 
 export const playbookSteps = [
-  { number: "01", title: "Frame the problem", line: "Define the operating constraint, baseline, value at stake and accountable owner.", gate: "Is the problem material and measurable?", tone: "moss" },
-  { number: "02", title: "Learn the work", line: "Map decisions, handoffs, exceptions, systems, data and expert judgment.", gate: "Do we understand how the work really happens?", tone: "sky" },
-  { number: "03", title: "Redesign the workflow", line: "Decide what should stay human, what should be assisted and what can be automated.", gate: "Is the future workflow viable and accountable?", tone: "rust" },
-  { number: "04", title: "Prove the risk", line: "Test the assumptions most likely to invalidate the investment.", gate: "Does the evidence justify production?", tone: "moss" },
-  { number: "05", title: "Build the system", line: "Integrate, evaluate and launch the complete operating system around the model.", gate: "Does it meet the agreed production standard?", tone: "sky" },
-  { number: "06", title: "Establish ownership", line: "Stabilize performance, train owners and set the operating and improvement rhythm.", gate: "Can the system be run responsibly after launch?", tone: "rust" },
+  { number: "01", title: "Frame", line: "Define the business problem, value at stake, baseline, scope, and accountable owner.", gate: "Is the problem material and measurable?", tone: "moss" },
+  { number: "02", title: "Map", line: "Understand the workflow, decisions, systems, data, exceptions, and institutional knowledge.", gate: "Do we understand how the work really happens?", tone: "sky" },
+  { number: "03", title: "Design", line: "Redesign the workflow and determine where people, software, and AI should operate.", gate: "Is the future workflow viable and accountable?", tone: "rust" },
+  { number: "04", title: "Validate", line: "Test the assumptions that determine whether the opportunity is worth pursuing.", gate: "Does the evidence justify production?", tone: "moss" },
+  { number: "05", title: "Build", line: "Engineer, integrate, evaluate, secure, and launch the production system.", gate: "Does it meet the agreed production standard?", tone: "sky" },
+  { number: "06", title: "Embed", line: "Establish ownership, monitoring, documentation, and the operating model required to sustain and improve it.", gate: "Can the system be run responsibly after launch?", tone: "rust" },
 ] as const;
 
 export const systemLayers = [

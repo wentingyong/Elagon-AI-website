@@ -1,11 +1,11 @@
-import { FinalCTA, SectionIntro } from "@/components/Editorial";
+import { HomeFinalCTA, SectionIntro } from "@/components/Editorial";
 import { HeroScroll } from "@/components/hero/HeroScroll";
 import { PrimaryCTA } from "@/components/PrimaryCTA";
 import { WhereScroll } from "@/components/where/WhereScroll";
 import { CaseArtwork } from "@/components/work/CaseArtwork";
 import { SelectedWorkRail } from "@/components/work/SelectedWorkRail";
 import { WorkRailCard } from "@/components/work/WorkRailCard";
-import { cases, systemLayers } from "@/content/site";
+import { cases, playbookSteps } from "@/content/site";
 
 export default function Home() {
   return (
@@ -22,14 +22,14 @@ export default function Home() {
       <WhereScroll />
 
       <section className="playbook-preview section-pad">
-        <SectionIntro eyebrow="The Elagon Playbook" title={<>The model is<br /><em>only one part.</em></>} text="A production system also needs a business measure, operating context, controls, accountable people and a learning loop." />
+        <SectionIntro eyebrow="The Elagon Playbook" title={<>From business problem<br /><em>to production performance.</em></>} text="The Elagon Playbook is our repeatable method for understanding the operation, identifying where AI belongs, proving the opportunity, and putting a dependable system into production." />
         <div className="playbook-steps">
-          {systemLayers.map((layer) => <article key={layer.number} data-reveal><span>{layer.number}</span><h3>{layer.title}</h3><p>{layer.line}</p></article>)}
+          {playbookSteps.map((step) => <article key={step.number} data-reveal><span>{step.number}</span><h3>{step.title}</h3><p>{step.line}</p></article>)}
         </div>
-        <PrimaryCTA href="/approach" inverse>Explore the playbook</PrimaryCTA>
+        <PrimaryCTA href="/approach" inverse>Explore the Playbook</PrimaryCTA>
       </section>
 
-      <FinalCTA title="Bring us the workflow that matters." text="We’ll determine whether it is material, measurable and ready for a focused production decision." />
+      <HomeFinalCTA />
     </>
   );
 }
