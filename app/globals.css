@@ -122,6 +122,7 @@ html.lenis, html.lenis body { height: auto; }
 [data-hs="s1-d"] { z-index: 9; }
 [data-hs="s2-c"] { z-index: 10; }
 .hs-vignette { z-index: 11; }
+.hero-scrim { z-index: 12; }
 .hs-mission { z-index: 13; }
 .hs-handoff { z-index: 14; }
 .hs-nav-blur { z-index: 15; }
@@ -130,8 +131,14 @@ html.lenis, html.lenis body { height: auto; }
 .hs-s2 { opacity: 0; visibility: hidden; }
 .hs-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 46%, transparent 36%, rgb(18 16 10 / 45%) 72%, rgb(18 16 10 / 78%) 100%); }
 /* width capped to the central arch opening (~0.38–0.655 of 2-C) so no word drapes onto the columns */
-.hs-mission { position: absolute; left: 51.5%; top: 45%; width: min(24rem, 26vw); transform: translate(-50%, -50%); text-align: center; }
-.hs-mission p { position: relative; margin: 0; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1rem, 1.3vw, 1.4rem); line-height: 1.5; text-shadow: 0 1px 14px rgb(10 10 6 / 60%); }
+/* the mission sits on open sky, the brightest thing in either scene — a text-shadow cannot
+   carry it (measured 2.15:1 at p90 against the required 4.5:1), so it gets its own soft
+   ellipse. Hidden until the scroll script reveals it, like every other scene-2 element. */
+.hs-mission { position: absolute; left: 51.5%; top: 45%; width: min(27rem, 27vw); transform: translate(-50%, -50%); text-align: center; opacity: 0; visibility: hidden; }
+/* radii must be <= 50% or the gradient is still opaque at the box edge and the scrim reads
+   as a hard rectangle instead of a soft field */
+.hs-mission::before { content: ""; position: absolute; z-index: -1; inset: -30% -34%; background: radial-gradient(ellipse 50% 50% at 50% 50%, rgb(14 18 11 / 72%) 0%, rgb(14 18 11 / 68%) 46%, rgb(14 18 11 / 42%) 70%, rgb(14 18 11 / 12%) 88%, transparent 100%); }
+.hs-mission p { position: relative; margin: 0; color: var(--text-on-image); font-family: var(--font-sans); font-size: clamp(1.1rem, 1.5vw, 1.65rem); line-height: 1.5; text-shadow: 0 1px 14px rgb(10 10 6 / 60%); }
 .hs-word { display: inline-block; opacity: 0; visibility: hidden; }
 /* serif interlude riding the sky dissolve: two centered white lines, revealed word by word */
 .hs-interlude { position: absolute; z-index: 13; left: 50%; top: 44%; width: min(64rem, 88vw); margin: 0; transform: translate(-50%, -50%); text-align: center; color: var(--text-on-image); font-family: var(--font-editorial); font-size: clamp(2.4rem, 5vw, 5rem); font-weight: 400; letter-spacing: -.05em; line-height: 1.05; text-shadow: 0 1px 18px rgb(10 10 6 / 55%); text-wrap: unset; }
@@ -153,12 +160,16 @@ html.lenis, html.lenis body { height: auto; }
 .hs-interlude-static { top: 22%; }
 .hs-interlude-static span { display: block; }
 /* left-anchored copy block (ref layout): big word + inline connector per line, lede below */
+/* §8.3 permits a localized scrim exactly where the text sits, and §15 makes AA
+   non-negotiable: white on this plate measured 1.85:1 at p90. Confined to the copy's column
+   and masked off at top and bottom, so the temple and the sky above the nav stay untouched. */
+.hero-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(96deg, rgb(20 26 16 / 64%) 0%, rgb(20 26 16 / 58%) 34%, rgb(20 26 16 / 36%) 58%, rgb(20 26 16 / 9%) 76%, transparent 88%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 13%, #000 90%, transparent 100%); mask-image: linear-gradient(to bottom, transparent 0%, #000 13%, #000 90%, transparent 100%); }
 .hero-copy { position: absolute; z-index: var(--z-copy); left: clamp(1.5rem, 4.5vw, 6rem); top: 30%; max-width: min(48rem, 52vw); }
 .split-headline { margin: 0; font-family: var(--font-sans); font-size: clamp(4.6rem, 11.5vw, 14rem); font-weight: 400; line-height: .98; letter-spacing: -.05em; }
 .hero-line { display: flex; align-items: baseline; gap: .08em; white-space: nowrap; }
 .hero-word { display: inline-block; will-change: transform, clip-path; }
 .hero-connector { display: inline-block; font-size: .34em; font-weight: 400; letter-spacing: -.04em; line-height: 1; }
-.hero-lede { max-width: min(30rem, 36vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1rem, 1.35vw, 1.5rem); line-height: 1.4; text-shadow: 0 4px 4px rgb(0 0 0 / 25%); }
+.hero-lede { max-width: min(32rem, 38vw); margin: clamp(1.4rem, 2.6vw, 2.6rem) 0 0; color: var(--text-on-image); font-size: clamp(1.05rem, 1.4vw, 1.55rem); line-height: 1.45; text-shadow: 0 2px 10px rgb(10 12 8 / 45%); }
 .hero-scroll { display: none; position: absolute; z-index: 30; right: var(--gutter); bottom: 2rem; align-items: center; gap: 1rem; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; }
 .hero-scroll i { display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--border-inverse); border-radius: 50%; }
 .hero-scroll svg { width: 1.2rem; height: 1.2rem; }
@@ -713,7 +724,7 @@ html.lenis, html.lenis body { height: auto; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
-  .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il, .hs-il-word { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
+  .split-headline, .hero-word, .hero-connector, .hero-lede, .hs-il, .hs-il-word, .hs-mission-static { opacity: 1 !important; visibility: visible !important; transform: none !important; clip-path: none !important; }
   /* rail degrades to a native horizontal scroller, everything visible */
   .swr-viewport { overflow-x: auto !important; }
   .swr-track, .swr-card { transform: none !important; }

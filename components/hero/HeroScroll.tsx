@@ -58,6 +58,7 @@ function HeroStatic() {
     <section className="hero-stage hero-stage-static">
       <div className="hs-static-panel">
         <Image src={HERO_ASSETS.s1Poster} alt={SCENE_LABEL} fill preload sizes="100vw" />
+        <div className="hero-scrim" aria-hidden="true" />
         <SiteHeader overlay />
         <SplitHeadline />
       </div>
@@ -272,6 +273,7 @@ export function HeroScroll() {
         <div className="hs-vignette hs-s2" aria-hidden="true" />
       </div>
 
+      <div className="hero-scrim" aria-hidden="true" />
       <SplitHeadline />
 
       <h2 className="hs-interlude" aria-label={`${heroInterlude[0]} ${heroInterlude[1]}`}>

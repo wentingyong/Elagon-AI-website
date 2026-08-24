@@ -96,6 +96,11 @@ export const heroScript: HeroStep[] = [
   { target: '[data-hs="s2-c"]', at: [0.6, 0.85], from: { scale: 1.8 }, to: { scale: 1 }, ease: "power2.out" },
   { target: ".hs-vignette", at: [0.62, 0.85], from: { autoAlpha: 0 }, to: { autoAlpha: 0.7 }, ease: "power1.out" },
 
+  // ——— the scene-1 scrim leaves with the copy it carries
+  { target: ".hero-scrim", at: [0.15, 0.3], from: { autoAlpha: 1 }, to: { autoAlpha: 0 }, ease: "power1.in" },
+  // the mission's scrim rides the parent while the words stagger on the children
+  { target: ".hs-mission", at: [0.79, 0.84], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
+
   // ——— Handoff into the next section
   { target: ".hs-handoff", at: [0.9, 1], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
 ];
