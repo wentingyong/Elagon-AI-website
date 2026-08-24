@@ -65,31 +65,42 @@ export const whereScript: WhereStep[] = [
   // the ground counter-drifts a third: parallax depth without a second plate
   { target: ".wf-ground", at: [0.18, 0.48], from: { yPercent: 0 }, to: { yPercent: -6 }, ease: "power2.inOut" },
 
-  // ——— the staircase enters top to bottom, each block overlapping the previous by half its window.
+  // ——— the staircase narrative, one chained unit per block: appear → flip to the detail →
+  // flip back, the flip-back riding the SAME window as the next block's entrance. The flips
+  // are scrubbed (rotationY on the block's .wf-card-rot rotator, not on .wf-box-card, which
+  // the CSS hover flip owns) so the whole chain reverses with the scroll like everything else.
   // opacity, NEVER autoAlpha: autoAlpha writes visibility:hidden, which would drop the section's
   // only links out of the tab order — a keyboard user would never reach them. Mouse reach is
   // gated by BOX_WINDOWS instead, so nothing invisible is ever clickable.
-  { target: '[data-wb="1"]', at: [0.42, 0.52], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
-  { target: '[data-wb="2"]', at: [0.49, 0.59], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
-  { target: '[data-wb="3"]', at: [0.56, 0.66], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
+  { target: '[data-wb="1"]', at: [0.4, 0.45], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
+  { target: '[data-wb="1"] .wf-card-rot', at: [0.455, 0.5], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
+  { target: '[data-wb="1"] .wf-card-rot', at: [0.54, 0.585], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
+  { target: '[data-wb="2"]', at: [0.54, 0.585], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
+  { target: '[data-wb="2"] .wf-card-rot', at: [0.595, 0.64], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
+  { target: '[data-wb="2"] .wf-card-rot', at: [0.68, 0.725], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
+  { target: '[data-wb="3"]', at: [0.68, 0.725], from: { opacity: 0, y: 64, scale: 0.94 }, to: { opacity: 1, y: 0, scale: 1 }, ease: "power2.out" },
+  { target: '[data-wb="3"] .wf-card-rot', at: [0.735, 0.78], from: { rotationY: 0 }, to: { rotationY: 180 }, ease: "power2.inOut" },
+  { target: '[data-wb="3"] .wf-card-rot', at: [0.8, 0.845], from: { rotationY: 180 }, to: { rotationY: 0 }, ease: "power2.inOut" },
 
-  // ——— the blocks recede (0.80–0.89) so the closing statement owns the opening
-  { target: '[data-wb="1"]', at: [0.8, 0.87], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
-  { target: '[data-wb="2"]', at: [0.81, 0.88], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
-  { target: '[data-wb="3"]', at: [0.82, 0.89], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
+  // ——— the blocks leave upward one by one so the closing statement owns the opening
+  { target: '[data-wb="1"]', at: [0.855, 0.895], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
+  { target: '[data-wb="2"]', at: [0.87, 0.91], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
+  { target: '[data-wb="3"]', at: [0.885, 0.925], from: { opacity: 1, y: 0 }, to: { opacity: 0, y: -48 }, ease: "power2.in" },
 
   // ——— closing beat: the pill settles as the last word lands (word stagger built in WhereScroll)
-  { target: ".wf-close .primary-cta", at: [0.92, 0.98], from: { opacity: 0, y: 20 }, to: { opacity: 1, y: 0 }, ease: "power2.out" },
+  { target: ".wf-close .primary-cta", at: [0.94, 0.99], from: { opacity: 0, y: 20 }, to: { opacity: 1, y: 0 }, ease: "power2.out" },
 
   // ——— handoff into the next section (mirrors .hs-handoff)
   { target: ".wf-handoff", at: [0.9, 1], from: { autoAlpha: 0 }, to: { autoAlpha: 1 }, ease: "none" },
 ];
 
-/** Where each block finishes entering: the auto-flip peek fires here, and focusin scrolls the pin here. */
-export const BOX_SETTLE = [0.52, 0.59, 0.66] as const;
+/** Where each block has finished its whole unit (entered, flipped, flipped back) — the focusin
+ *  scroll target. Deliberately AFTER the flip-back: the focus-visible CSS flip composes with the
+ *  scrubbed rotator, so focus must land where the rotator is back at 0 or the two cancel out. */
+export const BOX_SETTLE = [0.6, 0.74, 0.85] as const;
 /** p windows in which a block is actually on screen, and therefore mouse-reachable. The blocks
  *  stay tabbable outside these (see the opacity note above) — focusin brings the pin to them. */
-export const BOX_WINDOWS = [[0.42, 0.87], [0.49, 0.88], [0.56, 0.89]] as const;
+export const BOX_WINDOWS = [[0.4, 0.895], [0.54, 0.91], [0.68, 0.925]] as const;
 /** Where the closing pill becomes readable — its mouse gate, and the focusin target. */
 export const CLOSE_SETTLE = 0.98;
 export const CLOSE_OPEN = 0.92;

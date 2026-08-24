@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useLayoutEffect, useRef } from "react";
-import { ArrowIcon } from "@/components/ArrowIcon";
 import { PrimaryCTA } from "@/components/PrimaryCTA";
 import {
   BOX_SETTLE,
@@ -61,7 +60,6 @@ export function WhereScroll() {
           return { ...vars, yPercent: travel === 0 ? 0 : () => panToBottomPct(stage.clientWidth, stage.clientHeight) };
         };
 
-        const peeked = new Set<number>();
         const timeline = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
@@ -78,13 +76,9 @@ export function WhereScroll() {
               // is-open gates pointer-events: the blocks stay tabbable at every p (they animate
               // on opacity, not autoAlpha) so nothing invisible is ever clickable.
               BOX_WINDOWS.forEach(([open, shut], index) => {
-                const box = stage.querySelector(`[data-wb="${index + 1}"]`);
-                box?.classList.toggle("is-open", self.progress >= open && self.progress <= shut);
-                // one-shot flip peek once a block has landed, so the affordance is discoverable
-                // without a hover. The class is never removed, so it plays exactly once.
-                if (peeked.has(index) || self.progress < BOX_SETTLE[index]) return;
-                peeked.add(index);
-                box?.classList.add("is-peeked");
+                stage
+                  .querySelector(`[data-wb="${index + 1}"]`)
+                  ?.classList.toggle("is-open", self.progress >= open && self.progress <= shut);
               });
               stage.classList.toggle("is-outro", self.progress >= CLOSE_OPEN);
             },
@@ -113,8 +107,8 @@ export function WhereScroll() {
         timeline.fromTo(
           ".wf-cl-word",
           { y: 26, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: 0.035, stagger: 0.006, ease: "power2.out", immediateRender: false },
-          0.84,
+          { y: 0, autoAlpha: 1, duration: 0.03, stagger: 0.005, ease: "power2.out", immediateRender: false },
+          0.9,
         );
 
         // idle-stage pointer parallax on the plate, fading out by p=0.12
@@ -149,9 +143,8 @@ export function WhereScroll() {
           stage.removeEventListener("focusin", onFocusIn);
           stage.classList.remove("is-live", "is-outro");
           stage.querySelectorAll(".is-open").forEach((box) => box.classList.remove("is-open"));
-          stage.querySelectorAll(".is-peeked").forEach((box) => box.classList.remove("is-peeked"));
           gsap.set(
-            '.wf-ground, .wf-boxes, [data-wf="frame"], [data-wfp="frame"], .wf-box, .wf-eyebrow, .wf-h2-word, .wf-lede, .wf-cl-word, .wf-close .primary-cta, .wf-handoff',
+            '.wf-ground, .wf-boxes, [data-wf="frame"], [data-wfp="frame"], .wf-box, .wf-card-rot, .wf-eyebrow, .wf-h2-word, .wf-lede, .wf-cl-word, .wf-close .primary-cta, .wf-handoff',
             { clearProps: "all" },
           );
         };
@@ -177,8 +170,10 @@ export function WhereScroll() {
           {frictions.map((item, index) => (
             <Link key={item.number} className="wf-box" data-wb={index + 1} href={`/services#service-${item.number}`}>
               <div className="wf-box-card">
-                <div className="wf-face wf-front"><span className="wf-num" aria-hidden="true">{item.number}</span><h3>{item.title}</h3></div>
-                <div className="wf-face wf-back"><span className="wf-num" aria-hidden="true">{item.number}</span><p>{item.detail}</p><i aria-hidden="true"><ArrowIcon /></i></div>
+                <div className="wf-card-rot">
+                  <div className="wf-face wf-front"><span className="wf-num" aria-hidden="true">{item.number}</span><h3>{item.title}</h3></div>
+                  <div className="wf-face wf-back"><span className="wf-num" aria-hidden="true">{item.number}</span><p>{item.detail}</p></div>
+                </div>
               </div>
             </Link>
           ))}
