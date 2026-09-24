@@ -15,7 +15,7 @@ Open `http://localhost:3000`. The website runs with source-controlled fallback c
 ## Content and integrations
 
 - Sanity: set `NEXT_PUBLIC_SANITY_PROJECT_ID` and `NEXT_PUBLIC_SANITY_DATASET`, then run `npm run studio`.
-- Resend: set `RESEND_API_KEY`, `CONTACT_FROM_EMAIL`, and `CONTACT_TO_EMAIL`.
+- Resend: set `RESEND_API_KEY` (server-only) so the contact form can email hello@elagon.ai. `CONTACT_FROM_EMAIL` is optional and must use a domain verified in Resend.
 - PostHog: set `NEXT_PUBLIC_POSTHOG_KEY`; Vercel Analytics and Speed Insights activate on Vercel.
 
 The first release uses layered DOM media and GSAP. `VisualStageProps` and `MotionPreset` in `types/content.ts` provide the stable boundary for a later Three.js/WebGL renderer without coupling page content to a rendering engine.

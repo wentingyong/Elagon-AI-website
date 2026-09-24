@@ -6,6 +6,7 @@ import { Analytics } from "@/components/Analytics";
 import { Footer } from "@/components/Footer";
 import { MotionProvider } from "@/components/MotionProvider";
 import { socialLinks } from "@/content/site";
+import { CONTACT_EMAIL } from "@/lib/contact";
 import {
   absoluteUrl,
   SITE_LANGUAGE,
@@ -60,7 +61,7 @@ const structuredData = [
     url: SITE_URL,
     logo: absoluteUrl("/brand/icon.png"),
     description: seoCopy.home.description,
-    email: "jordan@elagon.ai",
+    email: CONTACT_EMAIL,
     // how Google ties the profiles to the entity — sourced from the same list the footer renders
     sameAs: socialLinks.filter((item) => item.href.startsWith("http") && item.href !== SITE_URL).map((item) => item.href),
     address: {

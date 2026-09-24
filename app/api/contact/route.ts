@@ -1,45 +1,69 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { z } from "zod";
+import { CONTACT_EMAIL, HONEYPOT_FIELD, normalizeContact, validateContact } from "@/lib/contact";
+import { buildContactEmail } from "@/lib/contact-email";
 import { allowRequest } from "@/lib/rate-limit";
 
-const inquiry = z.object({
-  name: z.string().trim().min(2).max(100),
-  email: z.string().email().max(200),
-  company: z.string().trim().min(2).max(150),
-  role: z.string().trim().min(2).max(150),
-  workflow: z.string().trim().min(20).max(3000),
-  outcome: z.string().trim().min(10).max(2000),
-  timeline: z.string().trim().min(1).max(100),
-  budget: z.string().trim().min(1).max(100),
-  consent: z.literal("accepted"),
-  website: z.string().max(0).optional().default(""),
-});
+const DEFAULT_FROM = "Elagon Website <website@elagon.ai>";
 
-function escapeHtml(value: string) {
-  return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" })[character] || character);
+/* Responses carry a code, never copy: ContactForm owns the wording (and the mailto fallback),
+   which also lets it cope when a platform error page comes back instead of this JSON. */
+const reply = (status: number, body: Record<string, unknown>) => NextResponse.json(body, { status });
+
+function sourcePage(request: NextRequest) {
+  const referer = request.headers.get("referer");
+  if (referer && URL.canParse(referer)) {
+    const url = new URL(referer);
+    return url.origin + url.pathname;
+  }
+  return request.nextUrl.origin;
 }
 
 export async function POST(request: NextRequest) {
-  const identifier = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!allowRequest(identifier)) return NextResponse.json({ message: "Too many attempts. Please try again later." }, { status: 429 });
-  const parsed = inquiry.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ message: "Please complete every required field with valid information." }, { status: 400 });
-  const data = parsed.data;
-  if (data.website) return NextResponse.json({ message: "Thank you. We’ll reply within two business days." });
+  const payload: unknown = await request.json().catch(() => null);
+
+  // Checked first so bots get a silent success and never learn which fields are validated.
+  const trap = payload !== null && typeof payload === "object" ? (payload as Record<string, unknown>)[HONEYPOT_FIELD] : undefined;
+  if (typeof trap === "string" && trap.trim()) {
+    console.warn("contact: honeypot filled, submission dropped");
+    return reply(200, { ok: true });
+  }
+
+  const values = normalizeContact(payload);
+  const fieldErrors = validateContact(values);
+  if (Object.keys(fieldErrors).length) return reply(400, { ok: false, code: "invalid", fieldErrors });
+
   const key = process.env.RESEND_API_KEY;
   if (!key) {
-    if (process.env.NODE_ENV !== "production") return NextResponse.json({ message: "Inquiry validated. Configure RESEND_API_KEY to deliver email." });
-    return NextResponse.json({ message: "Email delivery is not configured. Please contact jordan@elagon.ai." }, { status: 503 });
+    console.error("contact: RESEND_API_KEY is not set, inquiry not delivered");
+    return reply(503, { ok: false, code: "unavailable" });
   }
-  const resend = new Resend(key);
-  const { error } = await resend.emails.send({
-    from: process.env.CONTACT_FROM_EMAIL || "Elagon Website <website@elagon.ai>",
-    to: [process.env.CONTACT_TO_EMAIL || "jordan@elagon.ai"],
-    replyTo: data.email,
-    subject: `Website inquiry — ${data.company}`,
-    html: `<h1>New Elagon inquiry</h1><p><strong>Name:</strong> ${escapeHtml(data.name)}</p><p><strong>Email:</strong> ${escapeHtml(data.email)}</p><p><strong>Company:</strong> ${escapeHtml(data.company)}</p><p><strong>Role:</strong> ${escapeHtml(data.role)}</p><p><strong>Timeline:</strong> ${escapeHtml(data.timeline)}</p><p><strong>Budget:</strong> ${escapeHtml(data.budget)}</p><h2>Workflow or problem</h2><p>${escapeHtml(data.workflow).replace(/\n/g, "<br>")}</p><h2>Desired outcome</h2><p>${escapeHtml(data.outcome).replace(/\n/g, "<br>")}</p>`,
-  });
-  if (error) return NextResponse.json({ message: "The inquiry could not be delivered. Please email jordan@elagon.ai." }, { status: 502 });
-  return NextResponse.json({ message: "Thank you. We’ll reply within two business days." });
+
+  // Counted only for real send attempts, so correcting a validation error never locks anyone out.
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  if (!allowRequest(`contact:${ip}`)) {
+    console.warn("contact: rate limit reached");
+    return reply(429, { ok: false, code: "rate_limited" });
+  }
+
+  const { subject, html, text } = buildContactEmail(values, { submittedAt: new Date(), source: sourcePage(request) });
+  try {
+    const { data, error } = await new Resend(key).emails.send({
+      from: process.env.CONTACT_FROM_EMAIL?.trim() || DEFAULT_FROM,
+      to: [CONTACT_EMAIL],
+      replyTo: values.email,
+      subject,
+      html,
+      text,
+    });
+    if (data?.id) {
+      console.info("contact: inquiry sent", { id: data.id });
+      return reply(200, { ok: true });
+    }
+    // No submitted details in the log: name, status and message are enough to diagnose delivery.
+    console.error("contact: Resend rejected the inquiry", { name: error?.name, statusCode: error?.statusCode, message: error?.message });
+  } catch (error) {
+    console.error("contact: Resend request failed", error);
+  }
+  return reply(502, { ok: false, code: "send_failed" });
 }

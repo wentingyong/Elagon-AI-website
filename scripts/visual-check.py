@@ -44,22 +44,36 @@ with sync_playwright() as p:
             assert page.get_by_role("button", name="Open menu").get_attribute("aria-expanded") == "false"
         context.close()
 
+    # Contact form. /api/contact is intercepted, so this check never sends a real email.
     context = browser.new_context(viewport={"width": 390, "height": 844})
     page = context.new_page()
+    sent = []
+    reply = {"status": 502, "body": '{"ok":false,"code":"send_failed"}'}
+    def answer(route):
+        sent.append(route.request.post_data_json)
+        route.fulfill(status=reply["status"], content_type="application/json", body=reply["body"])
+    page.route("**/api/contact", answer)
     page.goto(ROOT + "/contact", wait_until="networkidle")
-    page.get_by_label("Name *").fill("Test User")
-    page.get_by_label("Work email *").fill("test@example.com")
-    page.get_by_label("Company *").fill("Example Company")
-    page.get_by_label("Role *").fill("Operations Lead")
-    page.get_by_label("Workflow or problem *").fill("A critical workflow currently needs a reliable production operating system.")
-    page.get_by_label("Desired business outcome *").fill("Reduce cycle time while preserving accountable human review.")
-    page.get_by_label("Timeline *").select_option(label="3–6 months")
-    page.get_by_label("Budget range *").select_option(label="$75k–$200k")
-    page.locator('input[name="consent"]').check()
-    page.get_by_role("button", name="Send inquiry").click()
-    page.wait_for_function("document.querySelector('[role=status]')?.textContent?.trim().length > 0")
-    status_text = page.get_by_role("status").inner_text().lower()
-    assert "configure" in status_text or "not configured" in status_text or "thank you" in status_text
+    submit = page.get_by_role("button", name="Discuss this workflow")
+    submit.click()
+    assert page.get_by_text("Enter your name.").is_visible(), "an empty submit should explain each missing field"
+    assert page.get_by_label("Name", exact=True).evaluate("el => el === document.activeElement"), "focus should move to the first invalid field"
+    assert not sent, "an invalid form must not reach the API"
+    page.get_by_label("Name", exact=True).fill("Test User")
+    page.get_by_label("Work email").fill("test@example.com")
+    page.get_by_label("Company").fill("Example Company")
+    page.get_by_label("Role").fill("Operations Lead")
+    page.get_by_label("Which workflow should we examine?").fill("Contract intake: reviewers re-key terms from PDFs into the CLM.")
+    page.get_by_label("What business result matters?").fill("Cut review cycle time while keeping accountable human sign-off.")
+    submit.click()
+    page.get_by_text("We couldn’t send your message.").wait_for()
+    assert page.get_by_label("Company").input_value() == "Example Company", "a failed send must keep the answers"
+    reply.update(status=200, body='{"ok":true}')
+    # Two clicks in the same tick: the in-flight guard must turn them into one request.
+    page.evaluate("() => { const button = document.querySelector('.form-submit'); button.click(); button.click(); }")
+    page.get_by_text("Received.").wait_for()
+    assert page.get_by_text("An Elagon principal will review the workflow").is_visible()
+    assert len(sent) == 2, f"expected one request per deliberate submit, got {len(sent)}"
     context.close()
 
     context = browser.new_context(viewport={"width": 1440, "height": 900}, reduced_motion="no-preference")
