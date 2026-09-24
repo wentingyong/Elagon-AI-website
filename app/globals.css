@@ -682,13 +682,20 @@ html.lenis, html.lenis body { height: auto; }
 .contact-intro dl > div { display: grid; grid-template-columns: 1fr 3fr; padding: 1.2rem 0; border-top: 1px solid var(--border-primary); }
 .contact-intro dt { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; }
 .contact-intro dd { margin: 0; }
-.contact-form { --focus-ring: var(--surface-deep); align-self: start; padding: clamp(1.5rem, 4vw, 4rem); background: var(--brand-sky); } /* the sitewide sky ring is invisible on this sky panel */
+.contact-form { --focus-ring: var(--surface-deep); --field-muted: #3f4a3c; align-self: start; padding: clamp(1.5rem, 4vw, 4rem); background: var(--brand-sky); } /* the sitewide sky ring is invisible on this sky panel */
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 .contact-form label { display: grid; gap: .5rem; margin-bottom: 1.5rem; }
 .contact-form label > span { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
 .contact-form input:not([type="checkbox"]), .contact-form textarea, .contact-form select { width: 100%; min-height: 52px; padding: .8rem 0; border: 0; border-bottom: 1px solid var(--ink-primary); border-radius: 0; outline: none; background: transparent; color: var(--ink-primary); }
 .contact-form textarea { resize: vertical; }
 .contact-form input:focus, .contact-form textarea:focus, .contact-form select:focus { border-bottom-width: 3px; }
+/* --field-muted is 4.8:1 on the sky panel; Tailwind's default placeholder grey is 2.6:1 */
+.contact-form ::placeholder { color: var(--field-muted); opacity: 1; }
+/* after the field rule, whose background shorthand would otherwise erase the chevron */
+.contact-form select { appearance: none; padding-right: 2rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f241d' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right .25rem center / 1.25rem; }
+.contact-form select:has(option[value=""]:checked) { color: var(--field-muted); }
+.contact-form option:not(:disabled) { color: var(--ink-primary); } /* Windows and Linux lists inherit the muted colour */
+@media (forced-colors: active) { .contact-form select { appearance: auto; padding-right: 0; background-image: none; } }
 .consent { grid-template-columns: auto 1fr; align-items: start; gap: .75rem !important; }
 .consent input { width: 20px; height: 20px; margin: 0; accent-color: var(--surface-deep); }
 .honeypot { position: absolute; left: -9999px; }
@@ -702,8 +709,8 @@ html.lenis, html.lenis body { height: auto; }
 .field-optional { font-weight: 400; letter-spacing: 0; text-transform: none; }
 .field-error { margin: .5rem 0 0; font-size: .85rem; line-height: 1.4; color: #751f16; }
 /* same specificity as the field rule above, so it has to come after it */
-.contact-form input[aria-invalid="true"], .contact-form textarea[aria-invalid="true"] { border-bottom-color: #751f16; }
-.contact-form input, .contact-form textarea { scroll-margin-block: 5rem; }
+.contact-form input[aria-invalid="true"], .contact-form textarea[aria-invalid="true"], .contact-form select[aria-invalid="true"] { border-bottom-color: #751f16; }
+.contact-form input, .contact-form textarea, .contact-form select { scroll-margin-block: 5rem; }
 .form-submit svg { flex: none; width: 1.05rem; height: 1.05rem; }
 .form-submit[aria-disabled="true"] { cursor: progress; opacity: .8; }
 .form-status a, .contact-success a { text-decoration: underline; }
