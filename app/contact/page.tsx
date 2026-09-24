@@ -10,7 +10,7 @@ export default function ContactPage() {
     <>
       <SiteHeader />
       <section className="contact-page">
-        <div className="contact-intro"><p className="eyebrow">Contact</p><h1>Start with<br /><em>the workflow.</em></h1><p>Tell us what happens today, what should be different and how the business would measure the change.</p><dl><div><dt>Good starting point</dt><dd>One important workflow, one accountable owner and one result worth improving.</dd></div><div><dt>First response</dt><dd>A senior member of the team replies within two business days.</dd></div><div><dt>Direct</dt><dd><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></dd></div></dl></div>
+        <div className="contact-intro"><p className="eyebrow">Contact</p><h1>Let’s talk<br /><em>AI.</em></h1><p>Tell us a little about your business and what you’re looking to accomplish. Our team will review your request and get in touch to discuss where AI can create value.</p><dl><div><dt>First response</dt><dd>A senior member of the team replies within two business days.</dd></div><div><dt>Direct</dt><dd><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></dd></div></dl></div>
         <ContactForm />
       </section>
     </>

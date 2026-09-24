@@ -11,6 +11,7 @@ const ink = "#1f241d";
 const muted = "#5b6158";
 const rule = "#e3ded1";
 const cell = `padding:10px 0;border-top:1px solid ${rule};vertical-align:top;`;
+const notProvided = `<span style="color:${muted};font-style:italic;">Not provided</span>`;
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#039;", '"': "&quot;" })[character] || character);
@@ -19,19 +20,20 @@ function escapeHtml(value: string) {
 /** Subject, HTML and plain-text bodies for one inquiry. Every submitted value is escaped. */
 export function buildContactEmail(values: ContactValues, { submittedAt, source }: { submittedAt: Date; source: string }) {
   const submitted = `${torontoTime.format(submittedAt)} (${submittedAt.toISOString()})`;
-  const subject = `Website inquiry — ${values.name}, ${values.company}`.replace(/\s+/g, " ").slice(0, 150);
+  // The topic comes from a fixed list, so it is safe in the subject and makes the inbox triageable.
+  const subject = `Website inquiry — ${values.name}, ${values.company} · ${values.topic}`.replace(/\s+/g, " ").slice(0, 150);
 
   const rows = details
     .map((field) => {
       const value = escapeHtml(values[field.name]);
-      const shown = field.type === "email" ? `<a href="mailto:${value}" style="color:${ink};">${value}</a>` : value;
-      return `<tr><td style="${cell}width:128px;padding-right:16px;color:${muted};">${field.emailLabel}</td><td style="${cell}">${shown}</td></tr>`;
+      const shown = !value ? notProvided : field.type === "email" ? `<a href="mailto:${value}" style="color:${ink};">${value}</a>` : value;
+      return `<tr><td style="${cell}width:168px;padding-right:16px;color:${muted};">${field.emailLabel}</td><td style="${cell}">${shown}</td></tr>`;
     })
     .join("");
   const sections = answers
     .map((field) => {
       const value = values[field.name];
-      const body = value ? escapeHtml(value).replace(/\n/g, "<br>") : `<span style="color:${muted};font-style:italic;">Not provided</span>`;
+      const body = value ? escapeHtml(value).replace(/\n/g, "<br>") : notProvided;
       return `<h2 style="margin:28px 0 6px;color:#596b4a;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;">${field.emailLabel}</h2><p style="margin:0;">${body}</p>`;
     })
     .join("");
@@ -46,7 +48,7 @@ export function buildContactEmail(values: ContactValues, { submittedAt, source }
   const text = [
     "New website inquiry",
     "",
-    ...details.map((field) => `${field.emailLabel}: ${values[field.name]}`),
+    ...details.map((field) => `${field.emailLabel}: ${values[field.name] || "Not provided"}`),
     ...answers.flatMap((field) => ["", field.emailLabel, values[field.name] || "Not provided"]),
     "",
     "—",

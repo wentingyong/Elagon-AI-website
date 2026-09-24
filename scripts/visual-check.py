@@ -54,25 +54,34 @@ with sync_playwright() as p:
         route.fulfill(status=reply["status"], content_type="application/json", body=reply["body"])
     page.route("**/api/contact", answer)
     page.goto(ROOT + "/contact", wait_until="networkidle")
-    submit = page.get_by_role("button", name="Discuss this workflow")
+    submit = page.get_by_role("button", name="Talk to an AI expert")
     submit.click()
     assert page.get_by_text("Enter your name.").is_visible(), "an empty submit should explain each missing field"
-    assert page.get_by_label("Name", exact=True).evaluate("el => el === document.activeElement"), "focus should move to the first invalid field"
+    assert page.get_by_label("Your name").evaluate("el => el === document.activeElement"), "focus should move to the first invalid field"
     assert not sent, "an invalid form must not reach the API"
-    page.get_by_label("Name", exact=True).fill("Test User")
+    page.get_by_label("Your name").fill("Test User")
     page.get_by_label("Work email").fill("test@example.com")
-    page.get_by_label("Company").fill("Example Company")
-    page.get_by_label("Role").fill("Operations Lead")
-    page.get_by_label("Which workflow should we examine?").fill("Contract intake: reviewers re-key terms from PDFs into the CLM.")
-    page.get_by_label("What business result matters?").fill("Cut review cycle time while keeping accountable human sign-off.")
+    page.get_by_label("Company name").fill("Example Company")
+    page.get_by_label("Phone number").fill("call me")
+    # The dropdown's label text includes its options, so it can't be matched exactly.
+    topic = page.get_by_label("What are you looking for help with?")
+    placeholder_colour = topic.evaluate("el => getComputedStyle(el).color")
+    topic.select_option("Building an AI solution")
+    assert topic.evaluate("el => getComputedStyle(el).color") != placeholder_colour, "a chosen option should drop the placeholder colour"
+    page.get_by_label("Tell us about the challenge or opportunity.").fill("Reviewers re-key contract terms from PDFs into the CLM.")
+    submit.click()
+    assert page.get_by_text("Enter a valid phone number, or leave this blank.").is_visible()
+    assert not sent, "an invalid phone number must not reach the API"
+    page.get_by_label("Phone number").fill("+1 416 555 0199")
     submit.click()
     page.get_by_text("We couldn’t send your message.").wait_for()
-    assert page.get_by_label("Company").input_value() == "Example Company", "a failed send must keep the answers"
+    assert page.get_by_label("Company name").input_value() == "Example Company", "a failed send must keep the answers"
+    assert sent[-1]["topic"] == "Building an AI solution" and sent[-1]["phone"] == "+1 416 555 0199" and "role" not in sent[-1], sent[-1]
     reply.update(status=200, body='{"ok":true}')
     # Two clicks in the same tick: the in-flight guard must turn them into one request.
     page.evaluate("() => { const button = document.querySelector('.form-submit'); button.click(); button.click(); }")
     page.get_by_text("Received.").wait_for()
-    assert page.get_by_text("An Elagon principal will review the workflow").is_visible()
+    assert page.get_by_text("An Elagon principal will review your request").is_visible()
     assert len(sent) == 2, f"expected one request per deliberate submit, got {len(sent)}"
     context.close()
 

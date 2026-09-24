@@ -68,9 +68,9 @@ export const seoCopy = {
     path: "/company",
   },
   contact: {
-    title: "Discuss a Production AI Workflow",
+    title: "Talk to an AI Expert",
     description:
-      "Discuss a critical workflow with Elagon. Start with the operating constraint, accountable owner, and measurable result your team wants to improve.",
+      "Tell Elagon what you want to improve, automate, or build with AI. A senior member of the team reviews every request and replies within two business days.",
     path: "/contact",
   },
 } as const;

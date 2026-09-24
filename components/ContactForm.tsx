@@ -42,16 +42,22 @@ function knownErrors(input: unknown) {
 
 function Field({ field, error }: { field: ContactField; error?: string }) {
   const described = error ? errorId(field.name) : undefined;
-  const control = { id: fieldId(field.name), name: field.name, required: Boolean(field.missing), "aria-invalid": error ? true : undefined, "aria-describedby": described };
+  // Always explicit: otherwise a required dropdown still on "Choose one" can be announced as invalid before any submit.
+  const control = { id: fieldId(field.name), name: field.name, required: Boolean(field.missing), "aria-invalid": Boolean(error), "aria-describedby": described };
   const isEmail = field.type === "email";
   return (
     <div className="contact-field">
       <label htmlFor={control.id}>
         <span>{field.label}{!field.missing && <> <span className="field-optional">(optional)</span></>}</span>
-        {/* No maxLength on textareas: it silently cuts pasted text, so length is validated with a message instead. */}
-        {field.multiline
-          ? <textarea {...control} rows={field.rows} data-lenis-prevent />
-          : <input {...control} type={field.type ?? "text"} maxLength={field.maxLength} autoComplete={field.autoComplete} autoCapitalize={isEmail ? "off" : undefined} spellCheck={isEmail ? false : undefined} />}
+        {field.options ? (
+          // Uncontrolled with an empty default, so no option is ever chosen on the visitor's behalf.
+          <select {...control} defaultValue=""><option value="" disabled>Choose one</option>{field.options.map((option) => <option key={option}>{option}</option>)}</select>
+        ) : field.multiline ? (
+          // No maxLength on textareas: it silently cuts pasted text, so length is validated with a message instead.
+          <textarea {...control} rows={field.rows} placeholder={field.placeholder} data-lenis-prevent />
+        ) : (
+          <input {...control} type={field.type ?? "text"} maxLength={field.maxLength} autoComplete={field.autoComplete} autoCapitalize={isEmail ? "off" : undefined} spellCheck={isEmail ? false : undefined} />
+        )}
       </label>
       {error && <p className="field-error" id={described}>{error}</p>}
     </div>
@@ -137,23 +143,24 @@ export function ContactForm() {
     return (
       <div className="contact-form contact-success" role="group" tabIndex={-1} ref={focusOnMount} aria-labelledby="contact-success-title" aria-describedby="contact-success-message">
         <h2 id="contact-success-title">Received.</h2>
-        <p id="contact-success-message">An Elagon principal will review the workflow and respond with an honest view of the fit and the most practical next step.</p>
+        <p id="contact-success-message">An Elagon principal will review your request and respond with an honest view of the fit and the most practical next step.</p>
       </div>
     );
   }
 
   const sending = phase === "sending";
-  const single = CONTACT_FIELDS.filter((field) => !field.multiline);
-  const multiline = CONTACT_FIELDS.filter((field) => field.multiline);
+  // Short text fields pair up in the grid; the dropdown and the long answer run full width.
+  const paired = CONTACT_FIELDS.filter((field) => !field.multiline && !field.options);
+  const fullWidth = CONTACT_FIELDS.filter((field) => field.multiline || field.options);
 
   return (
     <form className="contact-form" method="post" aria-label="Contact form" onSubmit={submit} onChange={recheck} noValidate>
       <p className="contact-form-note">All fields are required unless marked optional.</p>
-      <div className="form-grid">{single.map((field) => <Field key={field.name} field={field} error={errors[field.name]} />)}</div>
-      {multiline.map((field) => <Field key={field.name} field={field} error={errors[field.name]} />)}
+      <div className="form-grid">{paired.map((field) => <Field key={field.name} field={field} error={errors[field.name]} />)}</div>
+      {fullWidth.map((field) => <Field key={field.name} field={field} error={errors[field.name]} />)}
       <input className="honeypot" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" aria-hidden="true" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" />
       {/* aria-disabled rather than disabled: disabling the focused button would drop keyboard focus to the page. */}
-      <button className="form-submit" type="submit" aria-disabled={sending || undefined}><span>{sending ? "Sending…" : "Discuss this workflow"}</span><ArrowIcon direction="up-right" /></button>
+      <button className="form-submit" type="submit" aria-disabled={sending || undefined}><span>{sending ? "Sending…" : "Talk to an AI expert"}</span><ArrowIcon direction="up-right" /></button>
       <p className={`form-status${failure ? " is-error" : ""}`} role="status" aria-live="polite">{sending ? "Sending your message…" : failure && failures[failure]}</p>
     </form>
   );
