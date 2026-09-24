@@ -682,7 +682,7 @@ html.lenis, html.lenis body { height: auto; }
 .contact-intro dl > div { display: grid; grid-template-columns: 1fr 3fr; padding: 1.2rem 0; border-top: 1px solid var(--border-primary); }
 .contact-intro dt { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; }
 .contact-intro dd { margin: 0; }
-.contact-form { align-self: start; padding: clamp(1.5rem, 4vw, 4rem); background: var(--brand-sky); }
+.contact-form { --focus-ring: var(--surface-deep); align-self: start; padding: clamp(1.5rem, 4vw, 4rem); background: var(--brand-sky); } /* the sitewide sky ring is invisible on this sky panel */
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
 .contact-form label { display: grid; gap: .5rem; margin-bottom: 1.5rem; }
 .contact-form label > span { font-size: .7rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; }
@@ -696,6 +696,20 @@ html.lenis, html.lenis body { height: auto; }
 .form-submit:disabled { cursor: wait; opacity: .6; }
 .form-status { min-height: 1.5rem; margin: 1rem 0 0; }
 .form-status.is-error { color: #751f16; }
+.contact-form-note { margin: 0 0 2rem; font-size: .85rem; }
+.contact-field { margin-bottom: 1.5rem; }
+.contact-form .contact-field > label { margin-bottom: 0; }
+.field-optional { font-weight: 400; letter-spacing: 0; text-transform: none; }
+.field-error { margin: .5rem 0 0; font-size: .85rem; line-height: 1.4; color: #751f16; }
+/* same specificity as the field rule above, so it has to come after it */
+.contact-form input[aria-invalid="true"], .contact-form textarea[aria-invalid="true"] { border-bottom-color: #751f16; }
+.contact-form input, .contact-form textarea { scroll-margin-block: 5rem; }
+.form-submit svg { flex: none; width: 1.05rem; height: 1.05rem; }
+.form-submit[aria-disabled="true"] { cursor: progress; opacity: .8; }
+.form-status a, .contact-success a { text-decoration: underline; }
+.contact-success:focus { outline: none; }
+.contact-success h2 { margin: 0 0 1.25rem; font-family: var(--font-editorial); font-size: clamp(2.4rem, 4vw, 3.6rem); font-weight: 400; line-height: .95; letter-spacing: -.04em; }
+.contact-success p { max-width: 34rem; margin: 0; font-size: var(--body-lg); }
 .not-found { min-height: calc(100svh - 6rem); padding: var(--section-space) var(--gutter); }
 .not-found h1 { font-family: var(--font-editorial); font-size: var(--display-page); font-weight: 400; line-height: .85; }
 

@@ -1,54 +1,160 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import { flushSync } from "react-dom";
+import { ArrowIcon } from "@/components/ArrowIcon";
+import { CONTACT_EMAIL, CONTACT_FIELDS, HONEYPOT_FIELD, normalizeContact, validateContact, type ContactErrors, type ContactField, type ContactFieldName } from "@/lib/contact";
 
-type Status = "idle" | "sending" | "success" | "error";
+type Phase = "idle" | "sending" | "success";
+type Failure = "invalid" | "rate_limited" | "unavailable" | "send_failed" | "network" | "timeout";
 
-const fields = [
-  { name: "name", label: "Name", type: "text", autoComplete: "name" },
-  { name: "email", label: "Work email", type: "email", autoComplete: "email" },
-  { name: "company", label: "Company", type: "text", autoComplete: "organization" },
-  { name: "role", label: "Role", type: "text", autoComplete: "organization-title" },
-] as const;
+const email = <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>;
+
+/* /api/contact answers with a code and the wording lives here, so every failure — including a
+   platform error page that isn't JSON — reads plainly and keeps the direct address in reach. */
+const failures: Record<Failure, ReactNode> = {
+  invalid: "Some details need another look—see the highlighted fields.",
+  rate_limited: <>You’ve sent a few messages in a short time. Please wait about 10 minutes, or email {email}.</>,
+  unavailable: <>The form isn’t available right now. Please email {email} and we’ll reply within two business days.</>,
+  send_failed: <>We couldn’t send your message. Your answers are still here—try again, or email {email}.</>,
+  network: <>We couldn’t reach the server. Check your connection and try again, or email {email}.</>,
+  timeout: <>We couldn’t confirm your message was sent. Please email {email} rather than sending it again.</>,
+};
+const failureByStatus: Partial<Record<number, Failure>> = { 400: "invalid", 429: "rate_limited", 503: "unavailable" };
+const isFailure = (code: unknown): code is Failure => typeof code === "string" && Object.hasOwn(failures, code);
+
+const fieldId = (name: ContactFieldName) => `contact-${name}`;
+const errorId = (name: ContactFieldName) => `contact-${name}-error`;
+
+// Lands keyboard and screen-reader users on the confirmation, which replaces the form.
+const focusOnMount = (element: HTMLElement | null) => element?.focus();
+
+/** Only messages for fields this form renders, whatever else the response carries. */
+function knownErrors(input: unknown) {
+  const found: ContactErrors = {};
+  if (input === null || typeof input !== "object") return found;
+  for (const field of CONTACT_FIELDS) {
+    const message = (input as Record<string, unknown>)[field.name];
+    if (typeof message === "string" && message) found[field.name] = message;
+  }
+  return found;
+}
+
+function Field({ field, error }: { field: ContactField; error?: string }) {
+  const described = error ? errorId(field.name) : undefined;
+  const control = { id: fieldId(field.name), name: field.name, required: Boolean(field.missing), "aria-invalid": error ? true : undefined, "aria-describedby": described };
+  const isEmail = field.type === "email";
+  return (
+    <div className="contact-field">
+      <label htmlFor={control.id}>
+        <span>{field.label}{!field.missing && <> <span className="field-optional">(optional)</span></>}</span>
+        {/* No maxLength on textareas: it silently cuts pasted text, so length is validated with a message instead. */}
+        {field.multiline
+          ? <textarea {...control} rows={field.rows} data-lenis-prevent />
+          : <input {...control} type={field.type ?? "text"} maxLength={field.maxLength} autoComplete={field.autoComplete} autoCapitalize={isEmail ? "off" : undefined} spellCheck={isEmail ? false : undefined} />}
+      </label>
+      {error && <p className="field-error" id={described}>{error}</p>}
+    </div>
+  );
+}
 
 export function ContactForm() {
-  const [status, setStatus] = useState<Status>("idle");
-  const [message, setMessage] = useState("");
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [failure, setFailure] = useState<Failure | null>(null);
+  const [errors, setErrors] = useState<ContactErrors>({});
+  // Blocks a second submit in the same tick (double click, Enter + click) before React re-renders.
+  const inFlight = useRef(false);
+
+  /* Committed before focus moves, so the screen reader announces the field together with its
+     invalid state and message. */
+  function showErrors(found: ContactErrors) {
+    flushSync(() => {
+      setErrors(found);
+      setFailure("invalid");
+    });
+    const first = CONTACT_FIELDS.find((field) => found[field.name]);
+    if (first) document.getElementById(fieldId(first.name))?.focus();
+  }
+
+  // A field already showing an error re-checks as it is corrected; untouched fields stay quiet.
+  function recheck(event: React.FormEvent<HTMLFormElement>) {
+    const name = (event.target as HTMLInputElement).name as ContactFieldName;
+    if (!errors[name]) return;
+    const message = validateContact(normalizeContact(Object.fromEntries(new FormData(event.currentTarget))))[name];
+    const next = { ...errors };
+    if (message) next[name] = message;
+    else delete next[name];
+    setErrors(next);
+    if (!Object.keys(next).length && failure === "invalid") setFailure(null);
+  }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("sending");
-    setMessage("");
-    const form = event.currentTarget;
-    const body = Object.fromEntries(new FormData(form));
+    if (inFlight.current) return;
+    const data = Object.fromEntries(new FormData(event.currentTarget));
+    const values = normalizeContact(data);
+    const found = validateContact(values);
+    if (Object.keys(found).length) {
+      showErrors(found);
+      return;
+    }
+
+    inFlight.current = true;
+    setErrors({});
+    setFailure(null);
+    setPhase("sending");
     try {
-      const response = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const result = await response.json() as { message?: string };
-      if (!response.ok) throw new Error(result.message || "The message could not be sent.");
-      setStatus("success");
-      setMessage(result.message || "Thank you. We’ll reply within two business days.");
-      form.reset();
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...values, [HONEYPOT_FIELD]: data[HONEYPOT_FIELD] ?? "" }),
+        signal: AbortSignal.timeout(30_000),
+      });
+      const body = (await response.json().catch(() => null)) as { ok?: unknown; code?: unknown; fieldErrors?: unknown } | null;
+      // The route only answers ok once Resend has accepted the email.
+      if (response.ok && body?.ok === true) {
+        setPhase("success");
+        return;
+      }
+      setPhase("idle");
+      const serverErrors = knownErrors(body?.fieldErrors);
+      if (Object.keys(serverErrors).length) {
+        showErrors(serverErrors);
+        return;
+      }
+      const code = body?.code;
+      setFailure(isFailure(code) ? code : failureByStatus[response.status] ?? "send_failed");
     } catch (error) {
-      setStatus("error");
-      setMessage(error instanceof Error ? error.message : "The message could not be sent.");
+      setPhase("idle");
+      // The request may still land after a timeout, so that case steers away from resending.
+      setFailure(error instanceof DOMException && error.name === "TimeoutError" ? "timeout" : "network");
+    } finally {
+      inFlight.current = false;
     }
   }
 
+  if (phase === "success") {
+    return (
+      <div className="contact-form contact-success" role="group" tabIndex={-1} ref={focusOnMount} aria-labelledby="contact-success-title" aria-describedby="contact-success-message">
+        <h2 id="contact-success-title">Received.</h2>
+        <p id="contact-success-message">An Elagon principal will review the workflow and respond with an honest view of the fit and the most practical next step.</p>
+      </div>
+    );
+  }
+
+  const sending = phase === "sending";
+  const single = CONTACT_FIELDS.filter((field) => !field.multiline);
+  const multiline = CONTACT_FIELDS.filter((field) => field.multiline);
+
   return (
-    <form className="contact-form" onSubmit={submit} noValidate>
-      <div className="form-grid">
-        {fields.map((field) => <label key={field.name}><span>{field.label} *</span><input name={field.name} type={field.type} autoComplete={field.autoComplete} required /></label>)}
-      </div>
-      <label><span>Workflow or problem *</span><textarea name="workflow" required rows={4} /></label>
-      <label><span>Desired business outcome *</span><textarea name="outcome" required rows={3} /></label>
-      <div className="form-grid">
-        <label><span>Timeline *</span><select name="timeline" required defaultValue=""><option value="" disabled>Select</option><option>Within 3 months</option><option>3–6 months</option><option>6–12 months</option><option>Exploring</option></select></label>
-        <label><span>Budget range *</span><select name="budget" required defaultValue=""><option value="" disabled>Select</option><option>$25k–$75k</option><option>$75k–$200k</option><option>$200k+</option><option>Not defined</option></select></label>
-      </div>
-      <label className="consent"><input name="consent" type="checkbox" value="accepted" required /><span>I agree that Elagon may use this information to respond to my inquiry. *</span></label>
-      <input className="honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
-      <button className="form-submit" type="submit" disabled={status === "sending"}>{status === "sending" ? "Sending…" : "Send inquiry"}<span>↗</span></button>
-      <p className={`form-status is-${status}`} role="status" aria-live="polite">{message}</p>
+    <form className="contact-form" method="post" aria-label="Contact form" onSubmit={submit} onChange={recheck} noValidate>
+      <p className="contact-form-note">All fields are required unless marked optional.</p>
+      <div className="form-grid">{single.map((field) => <Field key={field.name} field={field} error={errors[field.name]} />)}</div>
+      {multiline.map((field) => <Field key={field.name} field={field} error={errors[field.name]} />)}
+      <input className="honeypot" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" aria-hidden="true" data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" />
+      {/* aria-disabled rather than disabled: disabling the focused button would drop keyboard focus to the page. */}
+      <button className="form-submit" type="submit" aria-disabled={sending || undefined}><span>{sending ? "Sending…" : "Discuss this workflow"}</span><ArrowIcon direction="up-right" /></button>
+      <p className={`form-status${failure ? " is-error" : ""}`} role="status" aria-live="polite">{sending ? "Sending your message…" : failure && failures[failure]}</p>
     </form>
   );
 }
