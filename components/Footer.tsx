@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <div className="footer-brand"><Logo inverse /></div>
-      <p>Production AI for complex operations.<br />Toronto · Working globally</p>
+      <p>Production AI for complex operations.<br />Ottawa · Working globally</p>
       <dl className="footer-social">
         {socialLinks.map((item) => (
           <div key={item.label}>
